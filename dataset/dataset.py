@@ -34,4 +34,8 @@ def load_xor_data():
 
 
 def load_moons_data(nb_data, noise):
-    return sklearn.datasets.make_moons(nb_data, noise)
+    return sklearn.datasets.make_moons(nb_data, noise=noise)
+
+
+def load_mnist_data(nb_data):
+    pass

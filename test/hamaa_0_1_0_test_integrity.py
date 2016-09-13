@@ -35,26 +35,36 @@ def test_xor_data():
 
 def test_moons_data():
     np.random.seed(0)
-    nb_data = 200
-    ratio = 0.8
-    split_index = int(nb_data * ratio)
-    x, y = dataset.load_moons_data(nb_data, 0.2)
-    y = np_utils.to_categorical(y, 2)
-    training_x = x[:split_index]
-    training_y = y[:split_index]
-    validation_x = x[split_index:]
-    validation_y = y[split_index:]
+    x, y = dataset.load_moons_data(200, 0.2)
+    cy = np_utils.to_categorical(y, 2)
+    training_x, training_y, validation_x, validation_y = np_utils.split_training_data(x, cy, 0.8)
     training_data = (training_x, training_y)
     validation_data = (validation_x, validation_y)
 
-    model = Network(layer_sizes=[2, 5, 2], activation_names=['sigmoid', 'sigmoid'], loss_name='quadratic_loss')
-    model.train(training_data=training_data, epochs=1000, learning_rate=10, mini_batch_size=100, verbose=1, validation_data=validation_data)
-    model.plot_train()
+    model = Network(layer_sizes=[2, 4, 2], activation_names=['sigmoid', 'sigmoid'], loss_name='quadratic_loss')
+    model.train(training_data=training_data, epochs=2000, learning_rate=0.5, mini_batch_size=10, verbose=1, validation_data=validation_data)
+    model.plot_training_iteration()
+    model.plot_prediction(x, y)
+
+
+def test_mnist_data():
+    x, y = dataset.load_mnist_data(10000)
+    cy = np_utils.to_categorical(y, 2)
+
+    training_x, training_y, validation_x, validation_y = np_utils.split_training_data(x, cy, 0.8)
+    training_data = (training_x, training_y)
+    validation_data = (validation_x, validation_y)
+
+    model = Network(layer_sizes=[2, 4, 2], activation_names=['sigmoid', 'sigmoid'], loss_name='quadratic_loss')
+    model.train(training_data=training_data, epochs=2000, learning_rate=0.5, mini_batch_size=10, verbose=1, validation_data=validation_data)
+    model.plot_training_iteration()
+    model.plot_prediction(x, y)
 
 
 def run():
     # test_xor_data()
-    test_moons_data()
+    # test_moons_data()
+    test_mnist_data()
 
 if __name__ == '__main__':
     run()

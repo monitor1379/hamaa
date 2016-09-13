@@ -24,3 +24,19 @@ def to_categorical(y, nb_class):
 def to_real(y):
     new_y = np.argmax(y, axis=1)
     return new_y
+
+def split_training_data(x, y, split_ratio):
+    """
+    根据划分比例split_ratio，从训练集中划分出相应比例作为验证集
+    :param training_x:
+    :param training_y:
+    :param split_ratio:
+    :return:
+    """
+    n = np.shape(x)[0]
+    idx = int(n * split_ratio)
+    training_x = x[:idx]
+    training_y = y[:idx]
+    validation_x = x[idx:]
+    validation_y = y[idx:]
+    return training_x, training_y, validation_x, validation_y

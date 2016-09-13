@@ -121,7 +121,6 @@ class Network:
                 batch_index = random_index[i*mini_batch_size:(i+1)*mini_batch_size]
                 batch_training_x = training_x[batch_index]
                 batch_training_y = training_y[batch_index]
-
                 # 前向
                 batch_output, mid_result = self.forward_and_keep_mid_result(batch_training_x)
                 top_diff = self.loss.diff_loss(batch_training_y, batch_output)
@@ -136,9 +135,10 @@ class Network:
             self.train_loss.append(train_loss)
             self.validation_accuracy.append(validation_accuracy)
             self.validation_loss.append(validation_loss)
+            # 打印log
             if verbose == 1 and epoch % (epochs / 10) == 0:
-                print 'epoch:{}, train_acc:{}, train_loss:{}, vali_acc:{}, vali_loss:{}'\
-                    .format(epoch, train_accuracy, train_loss, validation_accuracy, validation_loss)
+                print 'epoch:%d,\t train_acc:%f,\t train_loss:%f,\t vali_acc:%f,\t vali_loss:%f' \
+                      % (epoch, train_accuracy, train_loss, validation_accuracy, validation_loss)
 
     def backward_and_update(self, x, y, mid_result, top_diff, learning_rate):
         d_act = top_diff
@@ -149,14 +149,41 @@ class Network:
             self.weights[i-1] -= learning_rate * d_w
             self.biases[i-1] -= learning_rate * d_b
 
-
-    def plot_train(self):
+    def plot_training_iteration(self):
+        """
+        绘画迭代过程中，训练准确率、验证准确率、训练损失、验证损失随着迭代期变化的图像
+        :return:
+        """
         plt.subplot(211)
         plt.ylim([0, 1.0])
         plt.plot(self.train_accuracy)
         plt.plot(self.validation_accuracy)
+
         plt.subplot(212)
         plt.ylim([0, 1])
         plt.plot(self.train_loss)
         plt.plot(self.validation_loss)
+
         plt.show()
+
+
+    def plot_prediction(self, x, y):
+        x_min = np.min(x[:, 0]) - 0.5
+        x_max = np.max(x[:, 0]) + 0.5
+        y_min = np.min(x[:, 1]) - 0.5
+        y_max = np.max(x[:, 1]) + 0.5
+
+        h = 0.01
+        xx = np.arange(x_min, x_max, h)
+        yy = np.arange(y_min, y_max, h)
+        xx, yy = np.meshgrid(xx, yy)
+        Z = np.c_[xx.ravel(), yy.ravel()]
+        T = self.predict(Z)
+        T = T.reshape(xx.shape)
+        plt.figure('prediction')
+        plt.xlim([x_min, x_max])
+        plt.ylim([y_min, y_max])
+        plt.contourf(xx, yy, T, cmap=plt.cm.Spectral)
+        plt.scatter(x[:, 0], x[:, 1], c=y, s=30, cmap=plt.cm.Spectral)
+        plt.show()
+
