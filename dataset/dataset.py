@@ -13,7 +13,7 @@
 """
 
 import numpy as np
-
+import sklearn.datasets
 
 def load_or_data():
     x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
@@ -32,3 +32,6 @@ def load_xor_data():
     y = np.array([0, 1, 1, 0])
     return x, y
 
+
+def load_moons_data(nb_data, noise):
+    return sklearn.datasets.make_moons(nb_data, noise)
