@@ -27,6 +27,7 @@ class MulGate:
     def backward(w, x, d_z):
         d_w = np.dot(np.transpose(x), d_z)
         d_x = np.dot(d_z, np.transpose(w))
+        # print d_w
         return d_w, d_x
 
 

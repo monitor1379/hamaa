@@ -14,6 +14,8 @@
 
 import numpy as np
 import sklearn.datasets
+from mnist import mnist_decoder
+import os
 
 def load_or_data():
     x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
@@ -37,5 +39,10 @@ def load_moons_data(nb_data, noise):
     return sklearn.datasets.make_moons(nb_data, noise=noise)
 
 
-def load_mnist_data(nb_data):
-    pass
+def load_mnist_data(nb_training, nb_test):
+    training_x = mnist_decoder.load_train_images(num_data=nb_training)
+    training_y = mnist_decoder.load_train_labels(num_data=nb_training)
+    test_x = mnist_decoder.load_test_images(num_data=nb_test)
+    test_y = mnist_decoder.load_test_labels(num_data=nb_test)
+    return training_x, training_y, test_x, test_y
+
