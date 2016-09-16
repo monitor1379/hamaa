@@ -44,7 +44,7 @@ def test_moons_data():
     validation_data = (validation_x, validation_y)
 
     model = Network(layer_sizes=[2, 4, 2], activation_names=['sigmoid', 'sigmoid'], loss_name='categorical_crossentropy')
-    model.train(training_data=training_data, epochs=100, learning_rate=1, reg_lambda=0.0001, mini_batch_size=5, verbose=1, validation_data=validation_data, print_epoch=10)
+    model.train(training_data=training_data, epochs=130, learning_rate=1, reg_lambda=0.0002, mini_batch_size=5, verbose=1, validation_data=validation_data, print_epoch=10)
     model.plot_training_iteration()
     model.plot_prediction(x, y)
 
@@ -72,8 +72,8 @@ def test_mnist_data():
     print 'test data: \t\t\t', test_x.shape, test_y.shape
 
 
-    model = Network(layer_sizes=[h * w, 300, 10], activation_names=['sigmoid', 'sigmoid'], loss_name='categorical_crossentropy')
-    model.train(training_data=training_data, epochs=50, learning_rate=0.025, reg_lambda=0.00001, mini_batch_size=10, verbose=1, validation_data=validation_data, print_epoch=1)
+    model = Network(layer_sizes=[h * w, 140, 10], activation_names=['sigmoid', 'sigmoid'], loss_name='categorical_crossentropy')
+    model.train(training_data=training_data, epochs=50, learning_rate=0.25, reg_lambda=0.0004, mini_batch_size=10, verbose=1, validation_data=validation_data, print_epoch=1)
     print '测试集准确率：', model.evaluate_accuracy(test_x, test_y)
     model.plot_training_iteration()
 

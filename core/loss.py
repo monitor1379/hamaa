@@ -9,7 +9,7 @@
 @file: loss.py
 @time: 2016/9/11 12:07
 
-
+损失函数
 """
 
 import numpy as np
