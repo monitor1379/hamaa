@@ -6,7 +6,7 @@
 
 @version: 1.0
 @license: Apache Licence
-@file: gate.py
+@file: gates.py
 @time: 2016/9/11 9:01
 
 计算单元
@@ -73,4 +73,26 @@ class TanhGate:
         a = TanhGate.forward(x)
         d_x = (1 - a**2) * d_z
         return d_x
+
+
+class ReLUGate:
+    """relu单元"""
+    @staticmethod
+    def forward(x):
+        pass
+
+    @staticmethod
+    def backward(x, d_z):
+        pass
+
+class Conv2dGate:
+    """二维卷积单元"""
+
+    @staticmethod
+    def forward(x):
+        pass
+
+    @staticmethod
+    def backward(x, d_z):
+        pass
 

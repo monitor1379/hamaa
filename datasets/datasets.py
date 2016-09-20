@@ -6,7 +6,7 @@
 
 @version: 1.0
 @license: Apache Licence
-@file: dataset.py
+@file: datasets.py
 @time: 2016/9/11 9:00
 
 数据集加载文件
@@ -14,6 +14,7 @@
 
 import numpy as np
 import sklearn.datasets
+import skimage.io
 from mnist import mnist_decoder
 import os
 
@@ -46,3 +47,8 @@ def load_mnist_data(nb_training, nb_test):
     test_y = mnist_decoder.load_test_labels(num_data=nb_test)
     return training_x, training_y, test_x, test_y
 
+def load_lena():
+    module_path = os.path.dirname(__file__)
+    image_path = module_path + os.sep + 'images' + os.sep + 'lena.jpg'
+    im = skimage.io.imread(image_path)
+    return im

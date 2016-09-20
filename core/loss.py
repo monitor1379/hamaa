@@ -15,6 +15,9 @@
 import numpy as np
 from utils import np_utils
 
+
+
+
 class QuadraticLoss:
     """平方损失函数"""
 
@@ -54,3 +57,16 @@ class CategoricalCrossEntropy:
         n = real_y.shape[0]
         probs[range(n), real_y] -= 1
         return probs
+
+
+class LossManager:
+    """损失函数管理器"""
+
+    losses = {
+        'quadratic_loss': QuadraticLoss,
+        'categorical_crossentropy': CategoricalCrossEntropy,
+    }
+
+    @staticmethod
+    def get(name):
+        return LossManager.losses[name]
