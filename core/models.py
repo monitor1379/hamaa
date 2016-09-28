@@ -19,6 +19,7 @@ from core.optimizer import OptimizerManager
 from core.loss import LossManager
 from utils import np_utils
 from datetime import datetime
+from utils.time_utils import tic, toc
 
 class Sequential:
     def __init__(self):
@@ -58,19 +59,27 @@ class Sequential:
         output = self.forward(x)
         return self.loss.loss(y, output)
 
+    def evaluate_accuracy_and_loss(self, x, y):
+        output = self.forward(x)
+        loss = self.loss.loss(y, output)
+        pred = output.argmax(axis=1)
+        y = np_utils.to_real(y)
+        acc = np.sum(pred == y) * 1.0 / len(y)
+        return acc, loss
+
+
     def backward_and_update(self, x, y, top_diff):
         d_output = top_diff
         for i in range(len(self.layers)-1, -1, -1):
             # print 'i:{}, type:{}'.format(i, self.layers[i].layer_type)
             d_output = self.layers[i].backward(d_output)
-            if self.layers[i].updatable:
+            if self.layers[i].trainable:
                 self.layers[i].update(self.optimizer.lr)
-
 
     def train(self, training_data, epochs, mini_batch_size, verbose, validation_data, shuffle=True, print_epoch=100):
         training_x, training_y = training_data
         validation_x, validation_y = validation_data
-        n, m = training_x.shape
+        n = training_x.shape[0]
         random_idx = range(n)
         batch_times = np.ceil(n * 1.0 / mini_batch_size).astype(np.int32)  # 除法，向上取整
         for epoch in range(epochs):
@@ -90,7 +99,15 @@ class Sequential:
                 self.backward_and_update(batch_training_x, batch_training_y, top_diff)
             t_end = datetime.now()
             # 打印log
-            if (verbose == 1 and epoch % print_epoch == 0) or (epoch == (epochs-1)):
+            if (verbose == 1 and epoch % print_epoch == 0) or (epoch == (epochs - 1)):
+                train_acc, train_loss = self.evaluate_accuracy_and_loss(training_x, training_y)
+                self.train_epoch.append(epoch)
+                self.train_accuracy.append(train_acc)
+                self.train_loss.append(train_loss)
+                t_end = datetime.now()
+                t_delta = t_end - t_start
+                print 'epoch:%d,\t train_acc:%f,\t train_loss:%f,\t t:%d.%ds' % (epoch, train_acc, train_loss, t_delta.seconds, t_delta.microseconds / 1000)
+            elif (verbose == 2 and epoch % print_epoch == 0) or (epoch == (epochs - 1)):
                 # 记录
                 train_accuracy = self.evaluate_accuracy(training_x, training_y)
                 train_loss = self.evaluate_loss(training_x, training_y)
@@ -101,6 +118,7 @@ class Sequential:
                 self.train_loss.append(train_loss)
                 self.validation_accuracy.append(validation_accuracy)
                 self.validation_loss.append(validation_loss)
+                t_end = datetime.now()
                 t_delta = t_end - t_start
                 print 'epoch:%d,\t train_acc:%f,\t train_loss:%f,\t vali_acc:%f,\t vali_loss:%f,\t t:%d.%ds' \
                       % (epoch, train_accuracy, train_loss, validation_accuracy, validation_loss, t_delta.seconds,

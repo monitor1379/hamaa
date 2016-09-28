@@ -21,25 +21,26 @@ from core.layers import Dense, Activation
 
 
 def run():
+    np.random.seed(0)
     # 加载数据集
     # x, y = datasets.load_and_data()
     # x, y = datasets.load_xor_data()
     x, y = datasets.load_moons_data(200, 0.1)
 
     # 数据预处理
-    x = (x - np.min(x)) / (np.max(x) - np.min(x))
+    # x /= np.max(x)
     y = np_utils.to_categorical(y, 2)
 
     # 搭建模型
     model = Sequential()
-    model.add(Dense(input_dim=2, output_dim=4, init='normal_square'))
+    model.add(Dense(input_dim=2, output_dim=4, init='normal'))
     model.add(Activation('sigmoid'))
-    model.add(Dense(input_dim=4, output_dim=2, init='normal_square'))
+    model.add(Dense(input_dim=4, output_dim=2, init='normal'))
     model.add(Activation('sigmoid'))
 
     # 编译与训练模型
     model.compile(optimizer=SGD(lr=0.5), loss='categorical_crossentropy')
-    model.train(training_data=(x, y), epochs=900, mini_batch_size=30, verbose=1, validation_data=(x, y), print_epoch=10)
+    model.train(training_data=(x, y), epochs=200, mini_batch_size=20, verbose=1, validation_data=(x, y), print_epoch=10)
 
     # 模型可视化（只适用于二维数据）
     model.plot_training_iteration()
