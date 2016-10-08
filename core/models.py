@@ -24,6 +24,7 @@ from utils.time_utils import tic, toc
 class Sequential:
     def __init__(self):
         self.layers = []
+        self.nb_layers = 0
         self.optimizer = None
         self.loss = None
 
@@ -35,6 +36,8 @@ class Sequential:
 
     def add(self, layer):
         self.layers.append(layer)
+        layer.order_number = self.nb_layers
+        self.nb_layers += 1
 
     def compile(self, optimizer, loss):
         self.optimizer = optimizer
@@ -43,38 +46,19 @@ class Sequential:
     def forward(self, input_data):
         output_data = input_data
         for layer in self.layers:
+            # tic(layer.layer_type)
             output_data = layer.forward(output_data)
+            # toc()
         return output_data
-
-    def predict(self, x):
-        output = self.forward(x)
-        return output.argmax(axis=1)
-
-    def evaluate_accuracy(self, x, y):
-        output = self.predict(x)
-        y = np_utils.to_real(y)
-        return np.sum(output == y) * 1.0 / len(y)
-
-    def evaluate_loss(self, x, y):
-        output = self.forward(x)
-        return self.loss.loss(y, output)
-
-    def evaluate_accuracy_and_loss(self, x, y):
-        output = self.forward(x)
-        loss = self.loss.loss(y, output)
-        pred = output.argmax(axis=1)
-        y = np_utils.to_real(y)
-        acc = np.sum(pred == y) * 1.0 / len(y)
-        return acc, loss
-
 
     def backward_and_update(self, x, y, top_diff):
         d_output = top_diff
         for i in range(len(self.layers)-1, -1, -1):
-            # print 'i:{}, type:{}'.format(i, self.layers[i].layer_type)
+            # tic(self.layers[i].layer_type)
             d_output = self.layers[i].backward(d_output)
             if self.layers[i].trainable:
                 self.layers[i].update(self.optimizer.lr)
+            # toc()
 
     def train(self, training_data, epochs, mini_batch_size, verbose, validation_data, shuffle=True, print_epoch=100):
         training_x, training_y = training_data
@@ -99,7 +83,11 @@ class Sequential:
                 self.backward_and_update(batch_training_x, batch_training_y, top_diff)
             t_end = datetime.now()
             # 打印log
-            if (verbose == 1 and epoch % print_epoch == 0) or (epoch == (epochs - 1)):
+            if verbose == 0 and (epoch % print_epoch == 0 or epoch == (epochs - 1)):
+                t_end = datetime.now()
+                t_delta = t_end - t_start
+                print 'epoch:%d,\t t:%d.%ds' % (epoch, t_delta.seconds, t_delta.microseconds / 1000)
+            elif verbose == 1 and (epoch % print_epoch == 0 or epoch == (epochs - 1)):
                 train_acc, train_loss = self.evaluate_accuracy_and_loss(training_x, training_y)
                 self.train_epoch.append(epoch)
                 self.train_accuracy.append(train_acc)
@@ -107,7 +95,7 @@ class Sequential:
                 t_end = datetime.now()
                 t_delta = t_end - t_start
                 print 'epoch:%d,\t train_acc:%f,\t train_loss:%f,\t t:%d.%ds' % (epoch, train_acc, train_loss, t_delta.seconds, t_delta.microseconds / 1000)
-            elif (verbose == 2 and epoch % print_epoch == 0) or (epoch == (epochs - 1)):
+            elif verbose == 2 and (epoch % print_epoch == 0 or epoch == (epochs - 1)):
                 # 记录
                 train_accuracy = self.evaluate_accuracy(training_x, training_y)
                 train_loss = self.evaluate_loss(training_x, training_y)
@@ -123,6 +111,27 @@ class Sequential:
                 print 'epoch:%d,\t train_acc:%f,\t train_loss:%f,\t vali_acc:%f,\t vali_loss:%f,\t t:%d.%ds' \
                       % (epoch, train_accuracy, train_loss, validation_accuracy, validation_loss, t_delta.seconds,
                          t_delta.microseconds / 1000)
+
+    def predict(self, x):
+        output = self.forward(x)
+        return output.argmax(axis=1)
+
+    def evaluate_accuracy(self, x, y):
+        output = self.predict(x)
+        y = np_utils.to_real(y)
+        return np.sum(output == y) * 1.0 / len(y)
+
+    def evaluate_loss(self, x, y):
+        output = self.forward(x)
+        return self.loss.loss(y, output)
+
+    def evaluate_accuracy_and_loss(self, x, y):
+        output = self.forward(x)
+        loss = self.loss.loss(y, output)
+        pred = output.argmax(axis=1)
+        y = np_utils.to_real(y)
+        acc = np.sum(pred == y) * 1.0 / len(y)
+        return acc, loss
 
     def summary(self):
         pass

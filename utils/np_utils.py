@@ -40,3 +40,34 @@ def split_training_data(x, y, split_ratio):
     validation_x = x[idx:]
     validation_y = y[idx:]
     return training_x, training_y, validation_x, validation_y
+
+
+# 给定函数f，自变量x以及对f的梯度df，求对x的梯度
+def eval_numerical_gradient_array(f, x, df=None, verbose=False, h=1e-4):
+    it = np.nditer(x, flags=['multi_index'])
+    grad = np.zeros_like(x)
+    while not it.finished:
+        xi = it.multi_index
+        old_val = x[xi]
+
+        x[xi] = old_val + h
+        y_top = f(x)
+
+        x[xi] = old_val - h
+        y_bottom = f(x)
+
+        if df is not None:
+            grad[xi] = np.sum((y_top - y_bottom) * df) / (2 * h)
+        else:
+            grad[xi] = np.sum(y_top - y_bottom) / (2 * h)
+
+        if verbose:
+            print it.multi_index, grad[xi]
+        x[xi] = old_val
+        it.iternext()
+
+    return grad
+
+
+def sum_abs_err(u, v):
+    return np.sum(np.abs(u - v))

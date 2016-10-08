@@ -1,0 +1,83 @@
+=================================================
+date					= 2016-9-15
+--------------------参数表-----------------------
+nb_training				= 60000
+nb_test					= 10000
+split_training_ratio	= 0.90
+layer_sizes				= [784, 100, 10]
+activation_names		= ['sigmoid', 'sigmoid']
+loss_name				= 'categorical_crossentropy'
+epochs					= 30
+learning_rate			= 0.25
+reg_lambda				= 0.00001
+mini_batch_size			= 10
+verbose					= 1
+print_epoch				= 1
+------------------- 训练结果---------------------
+epoch					= 30
+train_loss				= 1.468434
+vali_loss				= 1.490322
+train_acc				= 0.990722
+vali_acc				= 0.973000
+test_acc				= 0.9691
+----------------------备注-----------------------
+从第18个epoch开始验证准确率不再上升，而训练准确率
+持续上升，说明此时已出现过拟合。
+
+
+=================================================
+date					= 2016-9-15
+--------------------参数表-----------------------
+nb_training				= 60000
+nb_test					= 10000
+split_training_ratio	= 0.90
+layer_sizes				= [784, 100, 10]
+activation_names		= ['sigmoid', 'sigmoid']
+loss_name				= 'categorical_crossentropy'
+epochs					= 50
+learning_rate			= 0.025
+reg_lambda				= 0.0001
+mini_batch_size			= 10
+verbose					= 1
+print_epoch				= 1
+------------------- 训练结果---------------------
+epoch					= 50
+train_loss				= 1.496629
+vali_loss				= 1.499539
+train_acc				= 0.973796
+vali_acc				= 0.969000
+test_acc				= 0.9627
+----------------------备注-----------------------
+此次调低了学习率，调高了惩罚因子，加大了学习期，
+不过测试的准确率还是没有学习率高时的高
+
+
+=================================================
+date					= 2016-9-15
+--------------------参数表-----------------------
+nb_training				= 60000
+nb_test					= 10000
+split_training_ratio	= 0.90
+layer_sizes				= [784, 300, 10]
+activation_names		= ['sigmoid', 'sigmoid']
+loss_name				= 'categorical_crossentropy'
+epochs					= 50
+learning_rate			= 0.025
+reg_lambda				= 0.00001
+mini_batch_size			= 10
+verbose					= 1
+print_epoch				= 1
+------------------- 训练结果---------------------
+epoch					= 50
+train_loss				= 1.477483
+vali_loss				= 1.488486
+train_acc				= 0.983463
+vali_acc				= 0.973833
+test_acc				= 0.9679
+----------------------备注-----------------------
+此次增加了隐藏层神经元到300个，训练时间大大增加。
+为了防止出现震荡，学习率依然选择了比较低的0.025，
+在第8个epoch后误差下降速度降低，在第18个epoch后
+训练损失开始低于验证损失，可能开始出现过拟合。经
+过50个epoch后，测试准确率为96.70%，效果并没有比30
+个epoch、100个隐藏层神经元好。

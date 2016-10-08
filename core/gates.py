@@ -15,6 +15,8 @@
 
 import numpy as np
 from utils.time_utils import tic, toc
+import core.conv
+# np.seterr(all='raise')
 
 class MulGate:
     """乘法单元"""
@@ -48,23 +50,13 @@ class AddGate:
             d_b = np.sum(d_b, axis=1, keepdims=True)
         return d_x, d_b
 
-    # old-version backward
-    #
-    # @staticmethod
-    # def backward(x, b, d_z):
-    #     d_x = np.ones_like(x) * d_z
-    #     if b.shape[0] == 1:
-    #         d_b = np.ones((1, d_z.shape[0]), dtype=np.float64).dot(d_z)
-    #     else:
-    #         d_b = np.ones_like(b) * d_z
-    #     return d_x, d_b
 
 class LinearGate:
     """线性计算单元"""
 
     @staticmethod
     def forward(x):
-        return x
+        return np.array(x)
 
     @staticmethod
     def backward(x, d_z):
@@ -75,7 +67,8 @@ class SigmoidGate:
 
     @staticmethod
     def forward(x):
-        return 1.0 / (1.0 + np.exp(-x))
+        z = 1.0 / (1.0 + np.exp(-x))
+        return z
 
     @staticmethod
     def backward(x, d_z):
@@ -112,7 +105,7 @@ class ReLUGate:
     def backward(x, d_z):
         d_x = np.ones_like(x)
         d_x[x < 0] = 0
-        return d_x
+        return d_x * d_z
 
 
 class Conv2DGate:
@@ -127,11 +120,9 @@ class Conv2DGate:
         else:
             mode = kwargs.get('mode')
             if mode not in Conv2DGate.mode_dict:
-                raise RuntimeError('Unkown convolution mode. Only support "full","same" and "valid".')
+                raise RuntimeError('Unkown convolution mode. Only support "full" and "valid".')
             if mode == 'full':
                 return Conv2DGate.convolve(im, kernel, 1, [kernel.shape[0] - 1, kernel.shape[1] - 1])
-            elif mode == 'same':
-                return Conv2DGate.convolve(im, kernel, 1, [1, 1])
             elif mode == 'valid':
                 return Conv2DGate.convolve(im, kernel, 1, [0, 0])
 
@@ -139,16 +130,35 @@ class Conv2DGate:
     def convolve(im, kernel, stride, padding_size):
         pim = Conv2DGate.padding(im, padding_size)
         conv_shape = Conv2DGate.get_output_shape(im.shape, kernel.shape, stride, padding_size)
-        im2col_output = Conv2DGate.im2col(pim, kernel.shape, stride, conv_height=conv_shape[0], conv_width=conv_shape[1])
+        im2col_output = Conv2DGate.c_im2col(pim, kernel.shape, stride, conv_height=conv_shape[0], conv_width=conv_shape[1])
         result = np.dot(kernel.reshape(1, -1), im2col_output).reshape(conv_shape)
-
         return result
 
+    # @staticmethod
+    # def fast_convolve(im, kernel, stride, padding_size, im2col_output):
+    #     conv_shape = Conv2DGate.get_output_shape(im.shape, kernel.shape, stride, padding_size)
+    #     result = np.dot(kernel.reshape(1, -1), im2col_output).reshape(conv_shape)
+    #     return result
+
     @staticmethod
-    def backward(im, kernel, d_z):
-        d_im = Conv2DGate.forward(d_z, Conv2DGate.rot180(kernel), mode='full')
+    def backward(im, kernel, d_z, grad_type=1):
+        """
+        grad_type: 0:只对kernel求导；1：都求导
+        """
+        d_im = None
         d_kernel = Conv2DGate.forward(im, d_z, mode='valid')
+        if grad_type != 0:
+            d_im = Conv2DGate.forward(d_z, Conv2DGate.rot180(kernel), mode='full')
         return d_im, d_kernel
+
+    # @staticmethod
+    # def fast_backward(im, kernel, d_z, im2col_output, grad_type=1):
+    #     d_im = None
+    #     d_kernel = Conv2DGate.fast_convolve(im, kernel, 1, [0, 0], im2col_output)
+    #     if grad_type != 0:
+    #         d_im = Conv2DGate.forward(d_z, Conv2DGate.rot180(kernel), mode='full')
+    #     return d_im, d_kernel
+
 
     @staticmethod
     def rot180(im):
@@ -191,9 +201,12 @@ class Conv2DGate:
                     im[row_start_idx:row_start_idx + kernel_height, col_start_idx:col_start_idx + kernel_width]\
                                         .reshape(im2col_height)
                 output_idx += 1
-
         return output
 
+    # 封装好了的用C实现的im2col算法，和纯Py的im2col具有相同的接口
+    @staticmethod
+    def c_im2col(im, kernel_size, stride, conv_height, conv_width):
+        return core.conv.im2col(im, kernel_size[0], kernel_size[1], stride, conv_height, conv_width)
 
 
 class MaxPooling2DGate:
@@ -201,7 +214,9 @@ class MaxPooling2DGate:
 
     @staticmethod
     def forward(im, pool_size):
-        tmp = Conv2DGate.im2col(im, pool_size, pool_size[0])
+        ch, cw = Conv2DGate.get_output_shape(im.shape, pool_size, pool_size[0], padding_size=[0, 0])
+        tmp = Conv2DGate.c_im2col(im, pool_size, pool_size[0], ch, cw)
+        # tmp = Conv2DGate.im2col(im, pool_size, pool_size[0]) # 纯Py版本，速度较慢
         return np.max(tmp, axis=0).reshape(im.shape[0] / pool_size[0], im.shape[1] / pool_size[1])
 
     @staticmethod
@@ -211,8 +226,7 @@ class MaxPooling2DGate:
         for i in xrange(0, im_h, pool_size[0]):
             for j in xrange(0, im_w, pool_size[1]):
                 max_idx = np.argmax(im[i:i+pool_size[0], j:j+pool_size[1]])
-                d_im[i:i+pool_size[0], j:j+pool_size[1]][max_idx / pool_size[0], max_idx % pool_size[1]] = \
-                    d_pim[i / pool_size[0]][j / pool_size[1]]
+                d_im[i:i+pool_size[0], j:j+pool_size[1]][max_idx / pool_size[0], max_idx % pool_size[1]] = d_pim[i / pool_size[0]][j / pool_size[1]]
         return d_im
 
 class MeanPooling2DGate:
@@ -222,7 +236,8 @@ class MeanPooling2DGate:
     def forward(im, pool_size):
         if pool_size[0] != pool_size[1]:
             raise RuntimeError('pool_size:{} is not equal!'.format(pool_size))
-        tmp = Conv2DGate.im2col(im, pool_size, pool_size[0])
+        ch, cw = Conv2DGate.get_output_shape(im.shape, pool_size, pool_size[0], padding_size=[0, 0])
+        tmp = Conv2DGate.c_im2col(im, pool_size, pool_size[0], ch, cw)
         return np.mean(tmp, axis=0).reshape(im.shape[0] / pool_size[0], im.shape[1] / pool_size[1])
 
     @staticmethod

@@ -18,18 +18,21 @@ import time
 class T(object):
     events = []
     starts = []
+    debug = True
 
 def tic(event=None):
-    T.events.append(event)
-    T.starts.append(time.time())
+    if T.debug:
+        T.events.append(event)
+        T.starts.append(time.time())
 
 
 def toc():
-    end = time.time()
-    event = T.events.pop()
-    start = T.starts.pop()
+    if T.debug:
+        end = time.time()
+        event = T.events.pop()
+        start = T.starts.pop()
 
-    if event:
-        print '@%s, time: %fs' % (event, end - start)
-    else:
-        print 'time: %fs' % (end - start)
+        if event:
+            print '@%s, time: %fs' % (event, end - start)
+        else:
+            print 'time: %fs' % (end - start)

@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-@author: monitor1379 
+@author: monitor1379
 @contact: yy4f5da2@hotmail.com
 @site: www.monitor1379.com
 
@@ -15,7 +15,7 @@
 from gates import *
 from initializer import InitializerManager
 from utils.time_utils import tic, toc
-
+from utils.np_utils import eval_numerical_gradient_array, sum_abs_err
 
 class Dense:
     """全连接层"""
@@ -30,10 +30,12 @@ class Dense:
         self.layer_name = layer_name
 
         self.w = InitializerManager.get(init).initialize(shape=[input_dim, output_dim])
-        self.b = InitializerManager.get(init).initialize(shape=[1, output_dim])
+        self.b = InitializerManager.get('zero').initialize(shape=[1, output_dim])
 
         # 表示该层的参数可训练
         self.trainable = True
+
+        self.order_number = -1
 
         # 保存前向计算的中间结果，加快计算速度
         self.input = 0
@@ -61,6 +63,7 @@ class Dense:
         return self.d_input
 
     def update(self, lr):
+        # print 'dense :', np.mean(self.d_w)
         self.w -= lr * self.d_w
         self.b -= lr * self.d_b
 
@@ -76,12 +79,15 @@ class Activation:
 
         self.activation = ActivationManager.get(activation)
         self.trainable = False
+        self.order_number = -1
 
         self.input = 0
         self.output = 0
 
         self.d_input = 0
         self.d_output = 0
+
+
 
     def forward(self, x):
         self.input = x
@@ -123,10 +129,14 @@ class Convolution2D:
         self.output_shape = (self.output_channels, self.output_height, self.output_width)
 
         self.trainable = True
+        self.order_number = -1
 
         # 权重
-        self.w = np.random.randn(nb_kernel, self.input_channels, kernel_height, kernel_width)
-        self.b = np.random.randn(nb_kernel, 1, 1) * 100
+        self.w = np.random.randn(nb_kernel, self.input_channels, kernel_height, kernel_width) / \
+                 np.sqrt(self.input_channels * kernel_height * kernel_width)
+
+        # self.w = np.random.randn(nb_kernel, self.input_channels, kernel_height, kernel_width)
+        self.b = InitializerManager.get('zero').initialize(shape=[nb_kernel, 1, 1])
 
         self.n = -1
         self.input = 0
@@ -145,24 +155,24 @@ class Convolution2D:
 
     def forward(self, x):
         self.input = x
+        self.conv_sum = np.zeros((x.shape[0], self.output_shape[0], self.output_shape[1], self.output_shape[2]))
         if self.n == -1 or self.n != x.shape[0]:
             self.n = x.shape[0]
-            self.conv_sum = np.zeros((self.n, self.output_shape[0], self.output_shape[1], self.output_shape[2]))
-            self.add = np.empty((self.n, self.output_shape[0], self.output_shape[1], self.output_shape[2]))
-            self.d_conv_sum = np.empty(self.conv_sum.shape)
-            self.d_input = np.empty(self.input.shape)
+            self.add = np.zeros((self.n, self.output_shape[0], self.output_shape[1], self.output_shape[2]))
+            self.d_conv_sum = np.zeros(self.conv_sum.shape)
+            self.d_input = np.zeros(self.input.shape)
+        # tic('conv2d ' + str(self.n * self.nb_kernel * self.input_channels) + '---->> ')
 
         for i in xrange(self.n):  # 对于每个输入数据
             for j in xrange(self.nb_kernel):  # 对于每个kernel
                 for channel in xrange(self.input_channels):  # 对于每个feature map
-                    tic(33)
                     self.conv_sum[i][j] += Conv2DGate.forward(self.input[i][channel], self.w[j][channel], stride=self.stride, padding_size=self.padding_size)
-                    toc()
                 # 加上偏置
                 self.add[i][j] = AddGate.forward(self.conv_sum[i][j], self.b[j])
         # 激活函数
         self.act = self.activation.forward(self.add)
         self.output = self.act
+        # toc()
         return self.output
 
     def backward(self, d_output):
@@ -171,16 +181,22 @@ class Convolution2D:
 
         # 对激活过程求导
         self.d_add = self.activation.backward(self.add, self.d_act)
+        # tic('conv2d ' + str(self.n * self.nb_kernel * self.input_channels) + '<<---- ')
         for i in xrange(self.n):  # 对于每个输入数据
             for j in xrange(self.nb_kernel):  # 对于每个kernel
                 # 对偏置求导
                 self.d_conv_sum[i][j], self.d_b[j] = AddGate.backward(self.conv_sum[i][j], self.b[j], self.d_add[i][j])
                 for channel in xrange(self.input_channels):  # 对于每个feature map
-                    self.d_input[i][channel], self.d_w[j][channel] = Conv2DGate.backward(self.input[i][channel], self.w[j][channel], d_output[i][0])
+                    # 如果该卷积层是输入层，则可以只对卷积核求导，以减少耗时
+                    self.d_input[i][channel], self.d_w[j][channel] = Conv2DGate.backward(self.input[i][channel],
+                                                                                         self.w[j][channel],
+                                                                                         self.d_conv_sum[i][j],
+                                                                                         grad_type=self.order_number)
+        # toc()
         return self.d_input
 
-
     def update(self, lr):
+        # print 'conv2d :', np.mean(self.d_w)
         self.w -= lr * self.d_w
         self.b -= lr * self.d_b
 
@@ -213,16 +229,66 @@ class MaxPooling2D:
             self.n = x.shape[0]
             self.output = np.empty((x.shape[0], self.output_shape[0], self.output_shape[1], self.output_shape[2]))
             self.d_input = np.empty((self.n, self.input_shape[0], self.input_shape[1], self.input_shape[2]))
+        # tic('maxp2d ' + str(self.n * self.output_shape[0]) + '---->> ')
         for i in xrange(self.n):
             for c in xrange(self.output_shape[0]):
                 self.output[i][c] = MaxPooling2DGate.forward(self.input[i][c], self.pool_size)
+        # toc()
         return self.output
 
     def backward(self, d_output):
         self.d_output = d_output
+        # tic('maxp2d ' + str(self.n * self.output_shape[0]) + '<<---- ')
         for i in xrange(self.n):
             for c in xrange(self.output_shape[0]):
                 self.d_input[i][c] = MaxPooling2DGate.backward(self.input[i][c], self.pool_size, self.d_output[i][c])
+        # toc()
+        return self.d_input
+
+
+
+class MeanPooling2D:
+    """平均池化层"""
+
+    layer_type = 'MeanPooling2D'
+
+    def __init__(self, input_shape, pool_size, layer_name=None):
+        """input_shape指输入形如（channels, rows，cols）的3D张量"""
+        self.input_shape = input_shape
+        self.pool_size = pool_size
+        self.layer_name = layer_name
+
+        self.output_shape = (input_shape[0], input_shape[1] / pool_size[0], input_shape[2] / pool_size[1])
+
+        self.trainable = False
+
+        self.n = -1
+        self.input = 0
+        self.output = 0
+
+        self.d_input = 0
+        self.d_output = 0
+
+    def forward(self, x):
+        self.input = x
+        if self.n == -1 or self.n != x.shape[0]:
+            self.n = x.shape[0]
+            self.output = np.empty((x.shape[0], self.output_shape[0], self.output_shape[1], self.output_shape[2]))
+            self.d_input = np.empty((self.n, self.input_shape[0], self.input_shape[1], self.input_shape[2]))
+        # tic('mean2d ' + str(self.n * self.output_shape[0]) + '---->> ')
+        for i in xrange(self.n):
+            for c in xrange(self.output_shape[0]):
+                self.output[i][c] = MeanPooling2DGate.forward(self.input[i][c], self.pool_size)
+        # toc()
+        return self.output
+
+    def backward(self, d_output):
+        self.d_output = d_output
+        # tic('mean2d ' + str(self.n * self.output_shape[0]) + '<<---- ')
+        for i in xrange(self.n):
+            for c in xrange(self.output_shape[0]):
+                self.d_input[i][c] = MeanPooling2DGate.backward(self.pool_size, self.d_output[i][c])
+        # toc()
         return self.d_input
 
 
