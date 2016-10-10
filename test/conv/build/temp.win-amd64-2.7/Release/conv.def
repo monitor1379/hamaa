@@ -1,3 +1,0 @@
-LIBRARY conv.pyd
-EXPORTS
-initconv
