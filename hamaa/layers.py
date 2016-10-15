@@ -171,7 +171,7 @@ class Activation(Layer):
         self.trainable = False
         self.config = {}
         self.trainable_params = []
-        self.grad = []
+        self.grads = []
         self.previous_layer = None
         self.latter_layer = None
 

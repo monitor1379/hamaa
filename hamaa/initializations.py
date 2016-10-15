@@ -9,7 +9,7 @@
 @file: initializations.py
 @time: 2016/9/20 9:59
 
-
+初始化器
 """
 
 import numpy as np

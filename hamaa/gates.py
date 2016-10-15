@@ -104,14 +104,27 @@ class ReLUGate:
         return d_x * d_z
 
 
+class SoftmaxGate:
+    """softmax单元"""
+
+    @staticmethod
+    def forward(x):
+        z = np.exp(x)
+        return z / np.sum(z, axis=1, keepdims=True)
+
+    @staticmethod
+    def backward(x, d_z):
+        raise Exception('Error: SoftmaxGate::backward() is not implemented yet!')
+
+
 class Conv2DGate:
 
     @staticmethod
-    def forward():
+    def forward(images, filters, fmt='NCHW'):
         pass
 
     @staticmethod
-    def backward():
+    def backward(images, filters, d_z, fmt='NCHW'):
         pass
 
 
@@ -133,3 +146,4 @@ class MeanPooling2DGate:
     @staticmethod
     def backward():
         pass
+

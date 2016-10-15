@@ -18,26 +18,23 @@ import time
 class T(object):
     events = []
     starts = []
-    debug = True
 
 
 def tic(event=None):
-    if T.debug:
-        T.events.append(event)
-        T.starts.append(time.time())
+    T.events.append(event)
+    T.starts.append(time.time())
 
 
-def toc(verbose=True):
-    if T.debug:
-        end = time.time()
-        event = T.events.pop()
-        start = T.starts.pop()
-        t = '%fs' % (end - start)
-        if verbose:
-            if event:
-                print '@%s, time: %s' % t
-            else:
-                print 'time: %s' % t
-        return t
+def toc(verbose=False):
+    end = time.time()
+    event = T.events.pop()
+    start = T.starts.pop()
+    t = end - start
+    if verbose:
+        if event:
+            print '@%s, time: %fs' % (event, t)
+        else:
+            print 'time: %fs' % t
+    return t
 
 

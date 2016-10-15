@@ -49,7 +49,6 @@ The data is stored like in a C array, i.e. the index in the last dimension chang
 import struct
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 
 # 当前路径
 module_path = os.path.dirname(__file__)

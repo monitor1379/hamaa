@@ -17,29 +17,33 @@ from hamaa.models import Sequential
 from hamaa.datasets import datasets
 from hamaa.utils import np_utils
 from hamaa.optimizers import SGD
+import numpy as np
+np.random.seed(0)
 
 def run():
+
     model = Sequential()
-    model.add(Dense(input_dim=2, output_dim=4, init='glorot_normal'))
+    model.add(Dense(input_dim=2, output_dim=5, init='normal'))
     model.add(Activation('sigmoid'))
     model.add(Dense(output_dim=2))
     model.add(Activation('sigmoid'))
     model.set_loss('mse')
-    model.set_optimizer(SGD(lr=0.6))
+    model.set_optimizer(SGD(lr=0.9))
 
     print model.summary()
 
-    # x, y = datasets.load_xor_data()
-    # y = np_utils.to_one_hot(y, 2)
-
-    x, y = datasets.load_moons_data(nb_data=200, noise=0.1)
+    x, y = datasets.load_moons_data(nb_data=400, noise=0.1)
+    x -= x.mean(axis=0)
+    x /= x.max(axis=0)
     y = np_utils.to_one_hot(y, 2)
 
-    model.train(training_data=(x, y), nb_epochs=400, mini_batch_size=20, verbose=2, validation_data=(x, y),
-                log_epoch=50)
-    y = np_utils.to_categorical(y)
+    training_data, validation_data = np_utils.split_training_data(data=(x, y), split_ratio=0.9)
 
-    model.plot_prediction(x, y)
+    model.train(training_data=training_data, nb_epochs=150, mini_batch_size=2, verbose=2,
+                validation_data=validation_data, log_epoch=10)
+
+    model.plot_prediction(data=training_data)
+    model.plot_prediction(data=validation_data)
     model.plot_training_iteration()
 
 if __name__ == '__main__':

@@ -1,0 +1,3 @@
+LIBRARY im2col.pyd
+EXPORTS
+initim2col

@@ -14,6 +14,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 from . import losses
 from .utils import np_utils
@@ -26,6 +27,10 @@ class Sequential(object):
         self.loss = None
         self.optimizer = None
 
+        # 可训练参数
+        self.trainable_params = []
+        self.grads = []
+
         # 保存训练迭代过程信息
         self.logger = {}
 
@@ -36,6 +41,8 @@ class Sequential(object):
             layer.previous_layer = self.layers[-1]
         layer.build()
         self.layers.append(layer)
+        # 将每一层的可训练参数囊括进来
+        self.trainable_params.extend(layer.trainable_params)
 
     def set_loss(self, loss):
         self.loss = losses.get(loss)
@@ -64,26 +71,27 @@ class Sequential(object):
         output = self.forward(x)
         return output.argmax(axis=1)
 
-    def backward(self, _d_output, update):
+    def backward(self, _d_output):
         """后向计算"""
         d_data = _d_output
         for i in xrange(len(self.layers)-1, -1, -1):
-            # 传播误差
+            # 调用每一层的backward方法，反向传播误差
+            # 并计算每一层里trainable_params的grads
             d_data = self.layers[i].backward(d_data)
-            if update and self.layers[i].trainable:
-                # 使用优化器更新该层参数
-                self.optimizer.update(self.layers[i].trainable_params, self.layers[i].grads)
         return d_data
 
-    def train(self, training_data, nb_epochs, mini_batch_size, verbose=2, log_epoch=1, validation_data=None,
+    def train(self, training_data, nb_epochs, mini_batch_size, verbose=1, log_epoch=1, validation_data=None,
               shuffle=True, **kwargs):
-        print '开始训练...'
         training_x, training_y = training_data
         n = training_x.shape[0]
         random_idx = range(n)
         batch_times = np.ceil(n * 1.0 / mini_batch_size).astype(np.int32)  # 除法，向上取整
         self.reset_logger()  # 清空logger
+        self.logger['start_time_is_valid'] = False
         for epoch in xrange(nb_epochs):
+            if not self.logger['start_time_is_valid']:
+                self.logger['start_time_is_valid'] = True
+                self.logger['start_time'] = datetime.now()
             if shuffle:
                 np.random.shuffle(random_idx)
             for i in xrange(batch_times):
@@ -95,31 +103,48 @@ class Sequential(object):
                 batch_output = self.forward(batch_training_x)
                 # 损失函数求导
                 diff = self.loss.diff(batch_training_y, batch_output)
-                # 反向传播，并更新模型参数
-                self.backward(diff, update=True)
+                # 反向传播，每一层调用自己的backward
+                # 方法来计算本层维护着的参数的梯度。
+                self.backward(diff)
+                # ========================================================
+                # 依次获取每层的梯度
+                self.grads = []
+                for layer in self.layers:
+                    self.grads.extend(layer.grads)
+                # 将所有层的参数与梯度交给优化器来处理
+                self.optimizer.update(self.trainable_params, self.grads)
                 # ========================================================
             self.log(epoch, nb_epochs, training_data, validation_data, verbose, log_epoch)
 
     def log(self, epoch, nb_epochs, training_data, validation_data, verbose, log_epoch):
-        if verbose == 2:
-            if epoch + 1 == nb_epochs or epoch % log_epoch == 0:
-                self.logger['epoch'].append(epoch)
+        if epoch + 1 == nb_epochs or epoch % log_epoch == 0:
+            self.logger['epoch'].append(epoch)
 
-                # 训练集acc以及loss
-                training_x, training_y = training_data
-                training_acc, training_loss = self.evaluate_accuracy_and_loss(training_x, training_y)
-                text = 'epoch: %5d,\t training_acc: %.3f,\t training_loss: %.5f' % (epoch, training_acc, training_loss)
-                self.logger['training_acc'].append(training_acc)
-                self.logger['training_loss'].append(training_loss)
+            # 训练集acc以及loss
+            training_x, training_y = training_data
+            training_acc, training_loss = self.evaluate_accuracy_and_loss(training_x, training_y)
+            text = 'epoch: %5d,\t training_acc: %.5f,\t training_loss: %.5f' % (epoch, training_acc, training_loss)
+            self.logger['training_acc'].append(training_acc)
+            self.logger['training_loss'].append(training_loss)
 
-                # 验证集acc以及loss
-                if validation_data:
-                    validation_x, validation_y = validation_data
-                    validation_acc, validation_loss = self.evaluate_accuracy_and_loss(validation_x, validation_y)
-                    text += ',\t validation_acc: %.3f,\t validation_loss: %.5f' % (validation_acc, validation_loss)
-                    self.logger['validation_acc'].append(validation_acc)
-                    self.logger['validation_loss'].append(validation_loss)
+            # 验证集acc以及loss
+            if validation_data:
+                validation_x, validation_y = validation_data
+                validation_acc, validation_loss = self.evaluate_accuracy_and_loss(validation_x, validation_y)
+                text += ',\t validation_acc: %.5f,\t validation_loss: %.5f' % (validation_acc, validation_loss)
+                self.logger['validation_acc'].append(validation_acc)
+                self.logger['validation_loss'].append(validation_loss)
 
+            # 时间统计
+            self.logger['end_time'] = datetime.now()
+            self.logger['start_time_is_valid'] = False
+            delta_time = self.logger['end_time'] - self.logger['start_time']
+            sec = delta_time.seconds + (delta_time.microseconds / 1000000.0)
+            text += ',\t time:%fs' % sec
+            text += ',\t lr:%f' % self.optimizer.cur_lr
+            if verbose == 0:
+                pass
+            elif verbose == 1:
                 print text
 
     def evaluate_accuracy(self, x, y):
