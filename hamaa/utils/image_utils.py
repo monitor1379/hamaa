@@ -15,28 +15,12 @@
 import numpy as np
 
 
-def hwd2dhw(img):
-    new_img = np.empty((img.shape[2], img.shape[0], img.shape[1]))
-    for d in xrange(img.shape[2]):
-        new_img[d] = img[:, :, d]
-    return new_img
+def chw2hwc(images):
+    assert (np.ndim(images) >= 3)
+    return np.swapaxes(np.swapaxes(images, -3, -2), -2, -1)
 
 
-def batch_hwd2dhw(imgs):
-    new_imgs = np.empty((imgs.shape[0], imgs.shape[3], imgs.shape[1], imgs.shape[2]))
-    for i in xrange(imgs.shape[0]):
-        new_imgs[i] = hwd2dhw(imgs[i])
-    return new_imgs
+def hwc2chw(images):
+    assert (np.ndim(images) >= 3)
+    return np.swapaxes(np.swapaxes(images, -1, -2), -2, -3)
 
-
-def dhw2hwd(img):
-    new_img = np.empty((img.shape[1], img.shape[2], img.shape[0]))
-    for d in xrange(img.shape[0]):
-        new_img[:, :, d] = img[d]
-    return new_img
-
-def batch_dhw2hwd(imgs):
-    new_imgs = np.empty((imgs.shape[0], imgs.shape[2], imgs.shape[3], imgs.shape[1]))
-    for i in xrange(imgs.shape[0]):
-        new_imgs[i] = dhw2hwd(imgs[i])
-    return new_imgs

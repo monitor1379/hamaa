@@ -40,6 +40,37 @@ def split_training_data(data, split_ratio):
     return training_data, validation_data
 
 
+def padding(images, pad_size):
+    """
+    对每一个图片的每一个通道上的二维图像进行padding填充操作，
+    支持HW/CHW/NCHW三种格式的images。
+    """
+    top, bottom, left, right = pad_size
+    pad_width = ((0, 0),) * (images.ndim - 2) + ((top, bottom), (left, right))
+    return np.pad(images, pad_width=pad_width, mode='constant', constant_values=0)
+
+
+def rot180(images):
+    """
+    旋转图片180度。
+    支持HW/CHW/NCHW三种格式的images。
+    """
+    out = np.empty(shape=images.shape, dtype=images.dtype)
+    if images.ndim == 2:
+        out = np.rot90(images, k=2)
+    elif images.ndim == 3:
+        for c in xrange(images.shape[0]):
+            out[c] = np.rot90(images[c], k=2)
+    elif images.ndim == 4:
+        for n in xrange(images.shape[0]):
+            for c in xrange(images.shape[1]):
+                out[n][c] = np.rot90(images[n][c], k=2)
+    else:
+        raise Exception('Invalid ndim: ' + str(images.ndim) +
+                        ', only support ndim between 2 and 4.')
+    return out
+
+
 # 给定函数f，自变量x以及对f的梯度df，求对x的梯度
 def eval_numerical_gradient_array(f, x, df=None, verbose=False, h=1e-4):
     it = np.nditer(x, flags=['multi_index'])
@@ -69,3 +100,4 @@ def eval_numerical_gradient_array(f, x, df=None, verbose=False, h=1e-4):
 
 def sum_abs_err(u, v):
     return np.sum(np.abs(u - v))
+

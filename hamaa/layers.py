@@ -131,7 +131,7 @@ class Dense(Layer):
 
     def forward(self, _input):
         self.input = _input
-        mul = MulGate.forward(self.w, self.input)
+        mul = MulGate.forward(self.input, self.w)
         add = AddGate.forward(mul, self.b)
         self.mid['mul'] = mul
         self.output = add
@@ -141,7 +141,7 @@ class Dense(Layer):
         self.d_output = _d_output
         d_add = self.d_output
         d_mul, d_b = AddGate.backward(self.mid['mul'], self.b, d_add)
-        d_w, self.d_input = MulGate.backward(self.w, self.input, d_mul)
+        self.d_input, d_w = MulGate.backward(self.input, self.w, d_mul)
         self.grads = [d_w, d_b]
         return self.d_input
 
@@ -191,3 +191,78 @@ class Activation(Layer):
         self.d_input = self.activation.backward(self.input, self.d_output)
         return self.d_input
 
+
+class Convolution2D(Layer):
+    """
+    卷积层。
+    """
+
+    layer_type = 'Convolution2D'
+
+    def __init__(self, nb_kernel, kernel_height, kernel_width, init='glorot_uniform', activation='linear'):
+        super(Convolution2D, self).__init__()
+
+        # 构造方法传入参数
+        self.nb_filter = nb_kernel
+        self.kernel_height = kernel_height
+        self.kernel_width = kernel_width
+        self.init = initializations.get(init)
+        self.activation = activations.get(activation)
+
+        # 输入输出数据及其形状
+        self.input = None
+        self.output = None
+        self.d_input = None
+        self.d_output = None
+        self.input_shape = (None, None, None, None)  # (N, C, H, W)
+        self.kernel_shape = (nb_kernel, None, kernel_height, kernel_width)  # (KN, C, KH, KW)
+        self.output_shape = (nb_kernel, None, None, None)  # (N, KN, CH, CW)
+
+        # 中间计算结果
+        self.mid = {}
+
+        # 模型参数
+        self.w = None
+        self.b = None
+
+        # 模型基本成员
+        self.trainable = True
+        self.config = {}
+        self.trainable_params = []
+        self.grads = []
+        self.previous_layer = None
+        self.latter_layer = None
+
+    def build(self):
+        # 如果input_dim为None，则通过前一层获得
+        if not self.input_dim:
+            # 如果本层是网络的第一层
+            if not self.previous_layer:
+                raise Exception('BuildError : 全连接层为第一层时必须在构造方法中'
+                                '提供input_dim参数!')
+            else:
+                self.input_dim = self.previous_layer.output_shape[-1]
+
+        # 设置层的输入输出形状
+        self.input_shape = (None, self.input_dim)
+
+        # 初始化参数
+        self.w = self.init((self.input_dim, self.output_dim))
+        self.b = initializations.zeros((1, self.output_dim))
+        self.trainable_params = [self.w, self.b]
+
+    def forward(self, _input):
+        self.input = _input
+        mul = MulGate.forward(self.input, self.w)
+        add = AddGate.forward(mul, self.b)
+        self.mid['mul'] = mul
+        self.output = add
+        return self.output
+
+    def backward(self, _d_output):
+        self.d_output = _d_output
+        d_add = self.d_output
+        d_mul, d_b = AddGate.backward(self.mid['mul'], self.b, d_add)
+        self.d_input, d_w = MulGate.backward(self.input, self.w, d_mul)
+        self.grads = [d_w, d_b]
+        return self.d_input

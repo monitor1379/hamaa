@@ -26,7 +26,7 @@ def run():
     model.add(Dense(output_dim=2))
     model.add(Activation('sigmoid'))
     model.set_loss('categorical_crossentropy')
-    model.set_optimizer(SGD(lr=0.9, momentum=0.9))
+    model.set_optimizer(SGD(lr=0.9, momentum=0.5))
 
     print model.summary()
 
@@ -36,7 +36,7 @@ def run():
     training_data, validation_data = np_utils.split_training_data(data=(x, y), split_ratio=0.9)
 
     model.train(training_data=training_data,
-                nb_epochs=50,
+                nb_epochs=100,
                 mini_batch_size=5,
                 verbose=1,
                 validation_data=validation_data,

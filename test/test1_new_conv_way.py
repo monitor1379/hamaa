@@ -126,8 +126,8 @@ def test2_speed():
 
 
 def test3_im2col_NCHW():
-    N, C, H, W = (10, 30, 28, 28)
-    KN, KC, KH, KW = (1, C, 5, 5)
+    N, C, H, W = (10, 10, 28, 28)
+    KN, KC, KH, KW = (1, C, 25, 25)
 
     x = np.arange(N * C * H * W).reshape(N, C, H, W).astype(np.double)
     w = np.arange(KN * KC * KH * KW).reshape(KN, KC, KH, KW).astype(np.double)
@@ -139,17 +139,16 @@ def test3_im2col_NCHW():
     CH = (H + 2 * PH - KH) / stride + 1
     CW = (W + 2 * PW - KW) / stride + 1
 
-    col_x = np.empty(((C * KH * KW), (N * CH * CW)), dtype=np.double)
-    row_w = np.empty((KN, (KC * KH * KW)), dtype=np.double)
-    conv = np.empty((N, KN, CH, CW))
 
     verbose = True
 
 
-    itertimes = 30
+    itertimes = 100
+
 
     tic('im2col_HW')
     for itertime in xrange(itertimes):
+        col_x = np.empty(((C * KH * KW), (N * CH * CW)), dtype=np.double)
         for i in xrange(N):
             for j in xrange(C):
                 col_x[j*KH*KW:(j+1)*KH*KW, i*CH*CW:(i+1)*CH*CW] = im2col.im2col_HW(x[i][j], KH, KW, stride)

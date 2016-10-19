@@ -1,18 +1,34 @@
 import sys
 sys.path.append("..")
 
-from clib import im2colutils
+from clib import im2colutils, im2rowutils, col2imutils
 import numpy as np
 from datetime import datetime
 
-N, C, H, W = (2, 2, 3, 4)
+
+N, C, H, W = (3, 1, 3, 3)
 KN, KC, KH, KW = (1, C, 3, 3)
 stride = 1
+CH = (H - KH) / stride + 1;
+CW = (W - KW) / stride + 1;
+
 
 x = np.arange(N * C * H * W).reshape(N, C, H, W).astype(np.double)
 w = np.ones((KN, KC, KH, KW)).astype(np.double)
 
-print x
-print w
+#x = x[0][0]
+#w = w[0][0]
 
-print im2colutils.im2col_NCHW_memcpy(x, w.shape[2], w.shape[3], stride)
+
+columnize_x = im2colutils.im2col_NCHW(x, KH, KW, stride)
+
+
+
+
+
+
+
+
+
+
+

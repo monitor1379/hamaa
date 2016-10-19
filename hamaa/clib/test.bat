@@ -1,1 +1,1 @@
-python test/test_im2col.py
+python test/test.py

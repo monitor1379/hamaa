@@ -1,0 +1,3 @@
+LIBRARY col2imutils.pyd
+EXPORTS
+initcol2imutils
