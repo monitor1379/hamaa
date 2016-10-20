@@ -1,17 +1,21 @@
 #include "D:/Anaconda2/include/Python.h"
 #include "D:/Anaconda2/Lib/site-packages/numpy/core/include/numpy/arrayobject.h"
+#include "../include/checkutils.h"
 
+static PyObject *error;
 
 PyArrayObject *im2row_HW(PyArrayObject *x, int KH, int KW, int stride)
 {
-    assert(PyArray_TYPE(x) == NPY_DOUBLE);
-    assert(PyArray_NDIM(x) == 2);
+    if(!check_dtype_is_double(x, error))
+        return NULL;
+    if(!check_ndim(x, 2, error))
+        return NULL;
 
     int H = PyArray_DIM(x, 0);
     int W = PyArray_DIM(x, 1);
 
-    assert ((H - KH) % stride == 0);
-    assert ((W - KW) % stride == 0);
+    if(!check_can_be_convolved(H, W, KH, KW, stride, error))
+        return NULL;
 
     int CH = (H - KH) / stride + 1;
     int CW = (W - KW) / stride + 1;
@@ -65,16 +69,18 @@ PyArrayObject *im2row_HW(PyArrayObject *x, int KH, int KW, int stride)
 
 PyArrayObject *im2row_NCHW(PyArrayObject *x, int KH, int KW, int stride)
 {
-    assert(PyArray_TYPE(x) == NPY_DOUBLE);
-    assert(PyArray_NDIM(x) == 4);
+    if(!check_dtype_is_double(x, error))
+        return NULL;
+    if(!check_ndim(x, 4, error))
+        return NULL;
 
     int N = PyArray_DIM(x, 0);
     int C = PyArray_DIM(x, 1);
     int H = PyArray_DIM(x, 2);
     int W = PyArray_DIM(x, 3);
 
-    assert ((H - KH) % stride == 0);
-    assert ((W - KW) % stride == 0);
+    if(!check_can_be_convolved(H, W, KH, KW, stride, error))
+        return NULL;
 
     int CH = (H - KH) / stride + 1;
     int CW = (W - KW) / stride + 1;
@@ -165,7 +171,12 @@ static PyMethodDef methods[] =
 
 PyMODINIT_FUNC initim2rowutils()
 {
-    Py_InitModule("im2rowutils", methods);
     import_array();
+    PyObject *m = Py_InitModule("im2rowutils", methods);
+    if(m == NULL)
+        return ;
+    error = PyErr_NewException("im2rowutils.error", NULL, NULL);
+    Py_INCREF(error);
+    PyModule_AddObject(m, "error", error);
 }
 

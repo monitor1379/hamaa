@@ -1,15 +1,22 @@
 #include "D:/Anaconda2/include/Python.h"
 #include "D:/Anaconda2/Lib/site-packages/numpy/core/include/numpy/arrayobject.h"
+#include "../include/checkutils.h"
+
+static PyObject *error;
 
 PyArrayObject *col2im_HW(PyArrayObject *columnize_x, int KH, int KW, int CH, int CW, int stride)
 {
-    assert(PyArray_TYPE(columnize_x) == NPY_DOUBLE);
-    assert(PyArray_NDIM(columnize_x) == 2);
+    if(!check_dtype_is_double(columnize_x, error))
+        return NULL;
+
+    if(!check_ndim(columnize_x, 2, error))
+        return NULL;
 
     int OH = PyArray_DIM(columnize_x, 0);
     int OW = PyArray_DIM(columnize_x, 1);
 
-    assert(OH == KH * KW && OW == CH * CW);
+    if(!check_columnize_x_shape_HW(OH, OW, KH, KW, CH, CW, error))
+        return NULL;
 
     int H = (CH - 1) * stride + KH;
     int W = (CW - 1) * stride + KW;
@@ -31,12 +38,12 @@ PyArrayObject *col2im_HW(PyArrayObject *columnize_x, int KH, int KW, int CH, int
         // (2): ccol * CW + crow = ocol
         col_start = ocol % CW * stride;
         row_start = ocol / CW * stride;
-        
+
         for(orow = 0; orow < OH; ++orow)
         {
             col = col_start + orow % KW;
             row = row_start + orow / KW;
-            x_data[row * W + col] = columnize_x_data[orow * OW + ocol];
+            x_data[row * W + col] += columnize_x_data[orow * OW + ocol];
 
         }
     }
@@ -46,13 +53,17 @@ PyArrayObject *col2im_HW(PyArrayObject *columnize_x, int KH, int KW, int CH, int
 
 PyArrayObject *col2im_NCHW(PyArrayObject *columnize_x, int KH, int KW, int CH, int CW, int stride)
 {
-    assert(PyArray_TYPE(columnize_x) == NPY_DOUBLE);
-    assert(PyArray_NDIM(columnize_x) == 2);
+    if(!check_dtype_is_double(columnize_x, error))
+        return NULL;
+
+    if(!check_ndim(columnize_x, 2, error))
+        return NULL;
 
     int OH = PyArray_DIM(columnize_x, 0);
     int OW = PyArray_DIM(columnize_x, 1);
 
-    assert(OH % (KH * KW) == 0 && OW % (CH * CW) == 0);
+    if(!check_columnize_x_shape_NCHW(OH, OW, KH, KW, CH, CW, error))
+        return NULL;
 
     int N = OW / (CH * CW);
     int C = OH / (KH * KW);
@@ -89,7 +100,7 @@ PyArrayObject *col2im_NCHW(PyArrayObject *columnize_x, int KH, int KW, int CH, i
                 {
                     col = (orow - orow_start) % KW + col_start;
                     row = (orow - orow_start) / KW + row_start;
-                    x_data[i*C*H*W + j*H*W + row*W + col] = columnize_x_data[orow * OW + ocol];
+                    x_data[i*C*H*W + j*H*W + row*W + col] += columnize_x_data[orow * OW + ocol];
                 }
             }
         }
@@ -130,8 +141,13 @@ static PyMethodDef methods[] =
 
 PyMODINIT_FUNC initcol2imutils()
 {
-    Py_InitModule("col2imutils", methods);
     import_array();
+    PyObject *m = Py_InitModule("col2imutils", methods);
+    if(m == NULL)
+        return ;
+    error = PyErr_NewException("col2imutils.error", NULL, NULL);
+    Py_INCREF(error);
+    PyModule_AddObject(m, "error", error);
 }
 
 

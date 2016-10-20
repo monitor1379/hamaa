@@ -13,7 +13,7 @@
 """
 
 
-from .clib import im2colutils, col2imutils
+from .clib import im2colutils, col2imutils, im2rowutils
 from .utils import np_utils
 
 import numpy as np
@@ -120,103 +120,4 @@ class SoftmaxGate:
     def backward(x, d_z):
         raise Exception('Error: SoftmaxGate::backward() is not implemented yet!')
 
-
-
-class Conv2DGate:
-
-    @staticmethod
-    def forward(x, w, stride, fmt='NCHW'):
-        if fmt == 'NCHW':
-            N, C, H, W = x.shape
-            KN, KC, KH, KW = w.shape
-            CH = (H - KH) / stride + 1
-            CW = (W - KW) / stride + 1
-
-            col_x = Conv2DGate.im2col_NCHW_1(x, KH, KW, stride)
-            # col_x = Conv2DGate.im2col_NCHW_2(x, KH, KW, stride)
-            row_w = w.reshape(KN, KC * KH * KW)
-            z = MulGate.forward(row_w, col_x)
-            z = z.reshape(N, KN, CH, CW)
-
-            cache = (row_w, col_x)
-            return z, cache
-        elif fmt == 'HW':
-            H, W = x.shape
-            KH, KW = w.shape
-            CH = (H - KH) / stride + 1
-            CW = (W - KW) / stride + 1
-
-            col_x = Conv2DGate.im2col_HW(x, KH, KW, stride)
-            row_w = w.reshape(1, KH * KW)
-
-            z = MulGate.forward(row_w, col_x)
-            z = z.reshape(CH, CW)
-
-            cache = (row_w, col_x)
-            return z, cache
-        else:
-            raise Exception('Invalid Conv2DGate forward format: ' + fmt + '!')
-
-    @staticmethod
-    def backward(x, w, stride, d_z, fmt='NCHW', cache=None):
-        if fmt == 'NCHW':
-            N, C, H, W = x.shape
-            KN, KC, KH, KW = w.shape
-            CH = (H - KH) / stride + 1
-            CW = (W - KW) / stride + 1
-
-            if cache:
-                row_w, col_x = cache
-            else:
-                col_x = Conv2DGate.im2col_NCHW_1(x, KH, KW, stride)
-                # col_x = Conv2DGate.im2col_NCHW_3(x, KH, KW, stride)
-                row_w = w.reshape(KN, KC * KH * KW)
-
-            d_z = d_z.reshape(KN, N * CH * CW)
-            d_row_w, d_col_x = MulGate.backward(row_w, col_x, d_z)
-
-            d_w = d_row_w.reshape(KN, KC, KH, KW)
-            d_x = Conv2DGate.col2im_NCHW_naive(d_col_x, KH, KW, CH, CW, stride)
-            return d_x, d_w
-        elif fmt == 'HW':
-            H, W = x.shape
-            KH, KW = w.shape
-            CH = (H - KH) / stride + 1
-            CW = (W - KW) / stride + 1
-
-            if cache:
-                row_w, col_x = cache
-            else:
-                col_x = Conv2DGate.im2col_HW(x, KH, KW, stride)
-                row_w = w.reshape(1, KH * KW)
-
-            d_z = d_z.reshape(1, CH * CW)
-            d_row_w, d_col_x = MulGate.backward(row_w, col_x, d_z)
-
-            d_w = d_row_w.reshape(KH, KW)
-            d_x = Conv2DGate.col2im_HW(d_col_x, KH, KW, CH, CW, stride)
-            return d_x, d_w
-        else:
-            raise Exception('Invalid Conv2DGate backward format: ' + fmt + '!')
-
-
-
-class MaxPooling2DGate:
-    @staticmethod
-    def forward():
-        pass
-
-    @staticmethod
-    def backward():
-        pass
-
-
-class MeanPooling2DGate:
-    @staticmethod
-    def forward():
-        pass
-
-    @staticmethod
-    def backward():
-        pass
 

@@ -20,6 +20,9 @@ import numpy as np
 # ==========================================
 # 以下为对外统一调用接口，使用C编写的Python扩展
 
+def get_conv_shape(H, W, KH, KW, stride):
+    return (H - KH) / stride + 1, (W - KW) / stride + 1
+
 def im2col_HW(x, KH, KW, stride):
     return im2colutils.im2col_HW(x, KH, KW, stride)
 
@@ -104,7 +107,8 @@ def im2col_NCHW_py(x, KH, KW, stride):
 
     for i in xrange(N):
         for j in xrange(C):
-            columnize_x[j * KH * KW:(j + 1) * KH * KW, i * CH * CW:(i + 1) * CH * CW] = \
+            columnize_x[j * KH * KW:(j + 1) * KH * KW,
+                        i * CH * CW:(i + 1) * CH * CW] = \
                 im2colutils.im2col_HW(x[i][j], KH, KW, stride)
     return columnize_x
 
@@ -119,7 +123,8 @@ def col2im_HW_py(columnize_x, KH, KW, CH, CW, stride):
     for ocol in xrange(OW):
         col = ocol % CW * stride
         row = ocol / CW * stride
-        x[row: row + KH, col: col + KW] = columnize_x[:, ocol].reshape(KH, KW)
+        x[row: row + KH, col: col + KW] = \
+            columnize_x[:, ocol].reshape(KH, KW)
     return x
 
 
