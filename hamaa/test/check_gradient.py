@@ -59,9 +59,6 @@ def check_AddGate():
     print sum_abs_err(grad_b, db)
 
 
-
-
-
 def check_SigmoidGate():
     x = np.random.randn(10, 4)
     df = np.random.randn(10, 4)
@@ -91,42 +88,62 @@ def check_ReLUGate():
 
     print sum_abs_err(grad_x, dx)
 
-def check_Conv2DGate():
-    N, C, H, W = (1, 1, 4, 5)
-    KN, KC, KH, KW = (1, C, 3, 3)
+
+def check_Convolution2D():
+    N, C, H, W = 1, 1, 4, 5
+    KN, KC, KH, KW = 1, C, 3, 3
     stride = 1
-    CH = (H - KH) / stride + 1
-    CW = (W - KW) / stride + 1
 
-    x = np.arange(N * C * H * W).reshape(N, C, H, W).astype(np.double)
-    w = np.ones((KN, KC, KH, KW)).astype(np.double)
+    x = np.random.rand(N, C, H, W)
+    w = np.random.rand(KN, KC, KH, KW)
 
-    z, cache = Conv2DGate.forward(x, w, stride)
-    d_z = np.random.rand(N, KN, CH, CW)
-    # d_z = np.random.rand(CH, CW)
-    d_x, d_w = Conv2DGate.backward(x, w, stride, d_z, cache=cache)
+    conv_layer = Convolution2D(nb_kernel=KN, kernel_height=KH, kernel_width=KW, input_shape=(C, H, W))
+    conv_layer.build()
 
-    grad_x = eval_numerical_gradient_array(lambda t: Conv2DGate.forward(t, w, stride)[0], x, d_z)
-    grad_w = eval_numerical_gradient_array(lambda t: Conv2DGate.forward(x, t, stride)[0], w, d_z)
+    # =========================================================
+    # test x
+    z = conv_layer.forward(x)
+    d_z = z
+    d_x = conv_layer.backward(d_z)
+    grad_x = eval_numerical_gradient_array(conv_layer.forward, x, d_z)
 
+    # print d_x
+    # print grad_x
     print sum_abs_err(d_x, grad_x)
+
+    # =========================================================
+    # test w
+    z = conv_layer.forward(x)
+    d_z = z
+    conv_layer.backward(d_z)
+    d_w = conv_layer.grads[0]
+
+    def w_forword(layer, xx, ww):
+        layer.w = ww
+        return layer.forward(xx)
+
+    grad_w = eval_numerical_gradient_array(lambda t: w_forword(conv_layer, x, t), w, d_z)
+
+    # print d_w
+    # print grad_w
     print sum_abs_err(d_w, grad_w)
 
-    # ========================================================
 
-    x = x[0][0]
-    w = w[0][0]
+def check_MeanPooling2D():
+    layer = MeanPooling2D(pooling_size=[2, 2], input_shape=(1, 6, 6))
+    layer.build()
 
-    z, cache = Conv2DGate.forward(x, w, stride, fmt='HW')
-    d_z = np.random.rand(CH, CW)
-    d_x, d_w = Conv2DGate.backward(x, w, stride, d_z, cache=cache, fmt='HW')
+    x = np.arange(36).reshape(1, 1, 6, 6).astype(np.double)
+    # print x
 
-    grad_x = eval_numerical_gradient_array(lambda t: Conv2DGate.forward(t, w, stride, fmt='HW')[0], x, d_z)
-    grad_w = eval_numerical_gradient_array(lambda t: Conv2DGate.forward(x, t, stride, fmt='HW')[0], w, d_z)
+    z = layer.forward(x)
+    d_z = z
+    d_x = layer.backward(d_z)
+    grad_x = eval_numerical_gradient_array(layer.forward, x, d_z)
+    # print d_x
+    # print grad_x
 
     print sum_abs_err(d_x, grad_x)
-    print sum_abs_err(d_w, grad_w)
-
 
 def run():
     # check_LinearGate()
@@ -135,7 +152,8 @@ def run():
     # check_SigmoidGate()
     # check_TanhGate()
     # check_ReLUGate()
-    check_Conv2DGate()
+    # check_Convolution2D()
+    check_MeanPooling2D()
 
 if __name__ == '__main__':
     run()

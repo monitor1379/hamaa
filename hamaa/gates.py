@@ -44,10 +44,10 @@ class AddGate:
     def backward(x, b, d_z):
         d_x = np.array(d_z)
         d_b = np.array(d_z)
-        if b.shape[0] == 1:
-            d_b = np.sum(d_b, axis=0, keepdims=True)
-        if b.shape[1] == 1:
-            d_b = np.sum(d_b, axis=1, keepdims=True)
+        for i in range(len(b.shape)):
+            # 如果b在第i维被扩展了，则需要压缩回去
+            if b.shape[i] == 1:
+                d_b = np.sum(d_b, axis=i, keepdims=True)
         return d_x, d_b
 
 

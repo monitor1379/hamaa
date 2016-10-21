@@ -21,7 +21,7 @@ from hamaa.optimizers import SGD
 
 def run():
     model = Sequential()
-    model.add(Dense(input_dim=2, output_dim=4, init='normal'))
+    model.add(Dense(input_dim=2, output_dim=3, init='normal'))
     model.add(Activation('sigmoid'))
     model.add(Dense(output_dim=2))
     model.add(Activation('sigmoid'))
@@ -37,7 +37,7 @@ def run():
 
     model.train(training_data=training_data,
                 nb_epochs=100,
-                mini_batch_size=5,
+                mini_batch_size=10,
                 verbose=1,
                 validation_data=validation_data,
                 log_epoch=10)

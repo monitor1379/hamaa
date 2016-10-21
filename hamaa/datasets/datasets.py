@@ -60,6 +60,9 @@ def load_mnist_data(nb_training, nb_test, preprocess=False, flatten=True):
     if flatten:
         training_x = training_x.reshape(training_x.shape[0], 784)
         test_x = test_x.reshape(test_x.shape[0], 784)
+    else:
+        training_x = training_x.reshape((training_x.shape[0], 1, training_x.shape[1], training_x.shape[2]))
+        test_x = test_x.reshape((test_x.shape[0], 1, test_x.shape[1], test_x.shape[2]))
 
     return (training_x, training_y), (test_x, test_y)
 

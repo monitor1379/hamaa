@@ -21,7 +21,7 @@ from hamaa.optimizers import SGD
 
 
 def run():
-    training_data, test_data = datasets.load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=True)
+    training_data, test_data = datasets.load_mnist_data(nb_training=6000, nb_test=10000, preprocess=True, flatten=True)
     training_data, validation_data = np_utils.split_training_data(training_data, 0.95)
 
     model = Sequential()

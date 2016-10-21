@@ -18,7 +18,7 @@ from abc import ABCMeta, abstractmethod
 from . import initializations
 from . import activations
 from .gates import AddGate, MulGate
-from .utils import conv_utils
+from .utils.conv_utils import *
 
 class Layer(object):
     """
@@ -94,8 +94,8 @@ class Dense(Layer):
         self.output = None
         self.d_input = None
         self.d_output = None
-        self.input_shape = (None, input_dim)
-        self.output_shape = (None, output_dim)
+        self.input_shape = [None, input_dim]
+        self.output_shape = [None, output_dim]
 
         # 中间计算结果
         self.mid = {}
@@ -124,7 +124,7 @@ class Dense(Layer):
                 self.input_dim = self.previous_layer.output_shape[-1]
 
         # 设置层的输入输出形状
-        self.input_shape = (None, self.input_dim)
+        self.input_shape[1] = self.input_dim
 
         # 初始化参数
         self.w = self.init((self.input_dim, self.output_dim))
@@ -133,6 +133,7 @@ class Dense(Layer):
 
     def forward(self, _input):
         self.input = _input
+        self.output_shape[0] = self.input_shape[0] = self.input.shape[0]
         mul = MulGate.forward(self.input, self.w)
         add = AddGate.forward(mul, self.b)
         self.mid['mul'] = mul
@@ -166,8 +167,8 @@ class Activation(Layer):
         self.output = None
         self.d_input = None
         self.d_output = None
-        self.input_shape = (None, None)
-        self.output_shape = (None, None)
+        self.input_shape = [None, None]
+        self.output_shape = [None, None]
 
         # 模型基本成员
         self.trainable = False
@@ -185,6 +186,7 @@ class Activation(Layer):
 
     def forward(self, _input):
         self.input = _input
+        self.output_shape[0] = self.input_shape[0] = self.input.shape[0]
         self.output = self.activation.forward(self.input)
         return self.output
 
@@ -220,26 +222,9 @@ class Convolution2D(Layer):
         self.output = None
         self.d_input = None
         self.d_output = None
-
-        self.N = None
-        self.C = None
-        self.H = None
-        self.W = None
-
-        self.KN = nb_kernel
-        self.KC = self.C
-        self.KH = kernel_height
-        self.KW = kernel_width
-
-        self.CH = None
-        self.CW = None
-
-        self.OH = None
-        self.OW = None
-
-        self.input_shape = (self.N, self.C, self.H, self.W)
-        self.kernel_shape = (self.KN, self.KC, self.KH, self.KW)
-        self.output_shape = (self.N, self.KN, self.CH, self.CW)
+        self.input_shape = [None, None, None, None]
+        self.output_shape = [None, None, None, None]
+        self.w_shape = [None, None, None, None]
 
         # 中间计算结果
         self.mid = {}
@@ -257,7 +242,9 @@ class Convolution2D(Layer):
         self.latter_layer = None
 
     def build(self):
-        # 如果不是第一层
+        # ==================================
+        # 计算input_shape
+        # 如果有前一层
         if self.previous_layer:
             self.input_shape = self.previous_layer.output_shape
         # 如果是第一层
@@ -269,60 +256,208 @@ class Convolution2D(Layer):
                                 '须在构造方法中提供input_shape参数!')
             # 如果指明了输入数据形状
             else:
-                self.input_shape = (None, self.CHW_shape[0],
-                                    self.CHW_shape[1], self.CHW_shape[2])
-        self.kernel_shape = (self.kernel_shape[0], self.input_shape[1],
-                             self.kernel_shape[2], self.kernel_shape[3])
+                self.input_shape[1:] = self.CHW_shape
+        # ==================================
+        # 计算w_shape以及output_shape
+        N, C, H, W = self.input_shape
+        KN = self.nb_kernel
+        KC = self.input_shape[1]
+        KH = self.kernel_height
+        KW = self.kernel_width
+        CH, CW = get_conv_shape(H, W, KH, KW, self.stride)
 
-        CH, CW = conv_utils.get_conv_shape(self.input_shape[2],
-                                           self.input_shape[3])
-        self.output_shape = (None, self.kernel_shape[0], )
+        self.w_shape = [KN, KC, KH, KW]
+        self.output_shape = [N, KN, CH, CW]
+
         # 初始化参数
-        self.w = self.init(shape=self.kernel_shape)
-        self.b = initializations.zeros(shape=(self.kernel_shape[0], 1, 1, 1))
+        self.w = self.init(shape=self.w_shape)
+        self.b = initializations.zeros(shape=(1, KN, 1, 1))
         self.trainable_params = [self.w, self.b]
-
-        # # 输入数据x的形状
-        # self.mid['N'] = self.input_shape[0]
-        # self.mid['C'] = self.input_shape[1]
-        # self.mid['H'] = self.input_shape[2]
-        # self.mid['W'] = self.input_shape[3]
-        #
-        # # 卷积核w的形状
-        # self.mid['KN'] = self.kernel_shape[0]
-        # self.mid['KC'] = self.kernel_shape[1]
-        # self.mid['KH'] = self.kernel_shape[2]
-        # self.mid['KW'] = self.kernel_shape[3]
-        #
-        # # 卷积结果conv_x的形状
-        # self.mid['CH'] = (self.mid['H'] - self.mid['KH']) / self.stride + 1
-        # self.mid['CW'] = (self.mid['W'] - self.mid['KW']) / self.stride + 1
-        #
-        # # im2col的output结果columnize_x的形状
-        # self.mid['OH'] = -1
-        # self.mid['OW'] = -1
-
 
     def forward(self, _input):
         self.input = _input
-        self.mid['columnize_x'] = conv_utils.im2col_NCHW(self.input,
-                                                         self.kernel_shape[2],
-                                                         self.kernel_shape[3],
-                                                         self.stride)
+        self.output_shape[0] = self.input_shape[0] = self.input.shape[0]
+        N, C, H, W = self.input_shape
+        KN, KC, KH, KW = self.w_shape
+        CH, CW = self.output_shape[2:]
 
-        self.mid['rowing_w'] = self.w.reshape(self.kernel_shape[0],
-                                              np.product(self.kernel_shape[1:]))
-
-        self.mid['mul'] = MulGate.forward(self.mid['columnize_x'],
-                                          self.mid['rowing_w'])
-
-        self.mid['add'] = None
-        return None
+        columnize_x = im2col_NCHW(self.input, KH, KW, self.stride)
+        rowing_w = self.w.reshape(KN, KC*KH*KW)
+        print self.previous_layer
+        self.mid['mul'] = MulGate.forward(self.mid['w'], self.mid['x'])
+        self.mid['mul'] = self.mid['mul'].reshape(self.KN, self.N, self.CH, self.CW).swapaxes(0, 1)
+        self.mid['add'] = AddGate.forward(self.mid['mul'], self.b)
+        self.output = self.mid['add']
+        return self.output
 
     def backward(self, _d_output):
         self.d_output = _d_output
-        d_add = self.d_output
-        d_mul, d_b = AddGate.backward(self.mid['mul'], self.b, d_add)
-        self.d_input, d_w = MulGate.backward(self.input, self.w, d_mul)
+        d_mul, d_b = AddGate.backward(self.mid['mul'], self.b, self.d_output)
+        d_mul = d_mul.swapaxes(0, 1).reshape(self.KN, self.N*self.CH*self.CW)
+        d_w, self.d_input = MulGate.backward(self.mid['w'], self.mid['x'], d_mul)
+        d_w = d_w.reshape(self.w_shape)
         self.grads = [d_w, d_b]
+        self.d_input = col2im_NCHW(self.d_input, self.KH, self.KW, self.CH, self.CW, self.stride)
         return self.d_input
+
+
+class Flatten(Layer):
+    """
+    平铺层，将4维输入(NCHW)转化为2维输出(NM)。
+    """
+
+    layer_type = 'Flatten'
+
+    def __init__(self, input_shape=None, **kwargs):
+        super(Flatten, self).__init__()
+
+        self.CHW_shape = input_shape  # (C, H, W)格式
+
+        # 输入输出数据及其形状
+        self.input = None
+        self.output = None
+        self.d_input = None
+        self.d_output = None
+        self.input_shape = None  # (N, C, H, W)格式
+        self.output_shape = None
+
+        # 中间计算结果
+        self.mid = {}
+
+        # 模型基本成员
+        self.trainable = True
+        self.config = {}
+        self.trainable_params = []
+        self.grads = []
+        self.previous_layer = None
+        self.latter_layer = None
+
+    def build(self):
+        # 如果具有前一层
+        if self.previous_layer:
+            self.input_shape = self.previous_layer.output_shape
+        # 如果是第一层
+        else:
+            if not self.CHW_shape:
+                raise Exception('BuildError : Flatten为第一层时必'
+                                '须在构造方法中提供input_shape参数!')
+            self.input_shape = (None, self.CHW_shape[0],
+                                self.CHW_shape[1], self.CHW_shape[2])
+        self.output_shape = (None, np.product(self.input_shape[1:]))
+
+    def forward(self, _input):
+        self.input = _input
+        self.output = self.input.reshape(self.input.shape[0], self.output_shape[1])
+        return self.output
+
+    def backward(self, _d_output):
+        self.d_output = _d_output
+        self.d_input = self.d_output.reshape(self.d_output.shape[0],
+                                             self.input_shape[1],
+                                             self.input_shape[2],
+                                             self.input_shape[3])
+        return self.d_input
+
+#
+# class MeanPooling2D(Layer):
+#     """
+#     均值池化层
+#     """
+#
+#     layer_type = 'MeanPooling2D'
+#
+#     def __init__(self, pooling_size, input_shape=None, **kwargs):
+#         super(MeanPooling2D, self).__init__()
+#
+#         self.pooling_size = pooling_size
+#         self.CHW_shape = input_shape  # (C, H, W)格式
+#
+#         # 输入输出数据及其形状
+#         self.input = None
+#         self.output = None
+#         self.d_input = None
+#         self.d_output = None
+#         self.input_shape = None  # (N, C, H, W)格式
+#         self.output_shape = None
+#
+#         # 中间计算结果
+#         self.mid = {}
+#
+#         # 模型基本成员
+#         self.trainable = True
+#         self.config = {}
+#         self.trainable_params = []
+#         self.grads = []
+#         self.previous_layer = None
+#         self.latter_layer = None
+#
+#     def build(self):
+#         # 如果具有前一层
+#         if self.previous_layer:
+#             self.input_shape = self.previous_layer.output_shape
+#         # 如果是第一层
+#         else:
+#             if not self.CHW_shape:
+#                 raise Exception('BuildError : MeanPoolnig2D层为第一层'
+#                                 '时必须在构造方法中提供input_shape参数!')
+#             self.input_shape = (None, self.CHW_shape[0],
+#                                 self.CHW_shape[1], self.CHW_shape[2])
+#
+#         self.output_shape = (self.input_shape[0],
+#                              self.input_shape[1],
+#                              self.input_shape[2] / self.pooling_size[0],
+#                              self.input_shape[3] / self.pooling_size[1])
+#         if self.pooling_size[0] != self.pooling_size[1]:
+#             raise Exception('BuildError : 目前MeanPooling2D层只支持方形采样！')
+#
+#         # 避免每次forward重复计算
+#         N, C, H, W = self.input_shape
+#         KN, KC, KH, KW = 1, C, self.pooling_size[0], self.pooling_size[1]
+#         stride = self.pooling_size[0]
+#         CH, CW = get_conv_shape(H, W, KH, KW, stride)
+#
+#         print N, C, H, W
+#         print KN, KC, KH, KW
+#
+#         self.mid['N'] = N
+#         self.mid['C'] = C
+#         self.mid['H'] = H
+#         self.mid['W'] = W
+#         self.mid['KN'] = KN
+#         self.mid['KC'] = KC
+#         self.mid['KH'] = KH
+#         self.mid['KW'] = KW
+#         self.mid['stride'] = stride
+#         self.mid['CH'], self.mid['CW'] = CH, CW
+#
+#     # def forward(self, _input):
+#     #     self.input = _input
+#     #     self.mid['N'] = self.input.shape[0]
+#     #     x = im2col_NCHW(self.input, self.mid['KH'], self.mid['KW'], self.mid['stride'])
+#     #     w = np.ones((self.mid['KN'], self.mid['KC']*self.mid['KH']*self.mid['KW']))
+#     #     w /= (self.mid['KH'] * self.mid['KW'])
+#     #     mul = MulGate.forward(w, x)
+#     #     mul = mul.reshape(self.mid['KN'], self.mid['N'], self.mid['CH'], self.mid['CW']).swapaxes(0, 1)
+#     #     self.mid['x'] = x
+#     #     self.mid['w'] = w
+#     #     self.mid['mul'] = mul
+#     #     self.output = mul
+#     #     return self.output
+#
+#     def forward(self, _input):
+#         self.input = _input
+#         self.mid['N'] = self.input.shape[0]
+#         self.output = np.empty(shape=(self.mid['N'], self.mid['C'], self.mid['CH'], self.mid['CW']),
+#                                dtype=np.double)
+#         for c in xrange(self)
+#         return self.output
+#
+#     def backward(self, _d_output):
+#         self.d_output = _d_output
+#         d_mul = self.d_output.swapaxes(0, 1)
+#         d_mul = d_mul.reshape(self.mid['KN'], self.mid['N']*self.mid['CH']*self.mid['CW'])
+#
+#         d_w, self.d_input = MulGate.backward(self.mid['w'], self.mid['x'], d_mul)
+#         self.d_input = col2im_NCHW(self.d_input, self.mid['KH'], self.mid['KW'],
+#                                    self.mid['CH'], self.mid['CW'], self.mid['stride'])
+#         return self.d_input

@@ -24,18 +24,25 @@ def get_conv_shape(H, W, KH, KW, stride):
     return (H - KH) / stride + 1, (W - KW) / stride + 1
 
 def im2col_HW(x, KH, KW, stride):
+    # 注意，x！并不是一个真正的数组！
+    # 如果传某数组的切片进C扩展函数中，数据会出错！
+    # 数组切片是原始数组的视图。这意味着数据不会被复制，任何修改都会直接反映到源数组上
+    x = np.array(x)
     return im2colutils.im2col_HW(x, KH, KW, stride)
 
 
 def im2col_NCHW(x, KH, KW, stride):
+    x = np.array(x)
     return im2colutils.im2col_NCHW(x, KH, KW, stride)
 
 
 def im2row_HW(x, KH, KW, stride):
+    x = np.array(x)
     return im2rowutils.im2row_HW(x, KH, KW, stride)
 
 
 def im2row_NCHW(x, KH, KW, stride):
+    x = np.array(x)
     return im2rowutils.im2row_NCHW(x, KH, KW, stride)
 
 
@@ -48,6 +55,7 @@ def col2im_HW(columnize_x, KH, KW, CH, CW, stride):
 
 
 def col2im_NCHW(columnize_x, KH, KW, CH, CW, stride):
+    columnize_x = np.array(columnize_x)
     return col2imutils.col2im_NCHW(columnize_x, KH, KW, CH, CW, stride)
 
 
