@@ -276,28 +276,52 @@ class Convolution2D(Layer):
 
     def forward(self, _input):
         self.input = _input
+
+        # 计算形状
         self.output_shape[0] = self.input_shape[0] = self.input.shape[0]
         N, C, H, W = self.input_shape
         KN, KC, KH, KW = self.w_shape
         CH, CW = self.output_shape[2:]
 
+        # 前向计算
         columnize_x = im2col_NCHW(self.input, KH, KW, self.stride)
         rowing_w = self.w.reshape(KN, KC*KH*KW)
-        print self.previous_layer
-        self.mid['mul'] = MulGate.forward(self.mid['w'], self.mid['x'])
-        self.mid['mul'] = self.mid['mul'].reshape(self.KN, self.N, self.CH, self.CW).swapaxes(0, 1)
-        self.mid['add'] = AddGate.forward(self.mid['mul'], self.b)
-        self.output = self.mid['add']
+        rowing_mul = MulGate.forward(rowing_w, columnize_x)
+        mul = rowing_mul.reshape(KN, N, CH, CW).swapaxes(0, 1)
+        add = AddGate.forward(mul, self.b)
+
+        # 保存中间计算变量
+        self.mid['columnize_x'] = columnize_x
+        self.mid['rowing_w'] = rowing_w
+        self.mid['mul'] = mul
+        self.mid['add'] = add
+
+        self.output = add
         return self.output
 
     def backward(self, _d_output):
         self.d_output = _d_output
-        d_mul, d_b = AddGate.backward(self.mid['mul'], self.b, self.d_output)
-        d_mul = d_mul.swapaxes(0, 1).reshape(self.KN, self.N*self.CH*self.CW)
-        d_w, self.d_input = MulGate.backward(self.mid['w'], self.mid['x'], d_mul)
+
+        # 形状变量
+        N, C, H, W = self.input_shape
+        KN, KC, KH, KW = self.w_shape
+        CH, CW = self.output_shape[2:]
+
+        # 提取中间计算变量
+        columnize_x = self.mid['columnize_x']
+        rowing_w = self.mid['rowing_w']
+        mul = self.mid['mul']
+        add = self.mid['add']
+
+        # 反向求导
+        d_mul, d_b = AddGate.backward(mul, self.b, self.d_output)
+        d_rowing_mul = d_mul.swapaxes(0, 1).reshape(KN, N*CH*CW)
+        d_w, self.d_input = MulGate.backward(rowing_w, columnize_x, d_rowing_mul)
         d_w = d_w.reshape(self.w_shape)
+        self.d_input = col2im_NCHW(self.d_input, KH, KW, CH, CW, self.stride)
+
+        # 保存梯度
         self.grads = [d_w, d_b]
-        self.d_input = col2im_NCHW(self.d_input, self.KH, self.KW, self.CH, self.CW, self.stride)
         return self.d_input
 
 
@@ -318,8 +342,8 @@ class Flatten(Layer):
         self.output = None
         self.d_input = None
         self.d_output = None
-        self.input_shape = None  # (N, C, H, W)格式
-        self.output_shape = None
+        self.input_shape = [None, None, None, None]
+        self.output_shape = [None, None]
 
         # 中间计算结果
         self.mid = {}
@@ -341,123 +365,117 @@ class Flatten(Layer):
             if not self.CHW_shape:
                 raise Exception('BuildError : Flatten为第一层时必'
                                 '须在构造方法中提供input_shape参数!')
-            self.input_shape = (None, self.CHW_shape[0],
-                                self.CHW_shape[1], self.CHW_shape[2])
-        self.output_shape = (None, np.product(self.input_shape[1:]))
+            else:
+                self.input_shape[1:] = self.CHW_shape
+        self.output_shape[-1] = np.product(self.input_shape[1:])
 
     def forward(self, _input):
         self.input = _input
-        self.output = self.input.reshape(self.input.shape[0], self.output_shape[1])
+        self.output_shape[0] = self.input_shape[0] = self.input.shape[0]
+        self.output = self.input.reshape(self.output_shape)
         return self.output
 
     def backward(self, _d_output):
         self.d_output = _d_output
-        self.d_input = self.d_output.reshape(self.d_output.shape[0],
-                                             self.input_shape[1],
-                                             self.input_shape[2],
-                                             self.input_shape[3])
+        self.d_input = self.d_output.reshape(self.input_shape)
         return self.d_input
 
-#
-# class MeanPooling2D(Layer):
-#     """
-#     均值池化层
-#     """
-#
-#     layer_type = 'MeanPooling2D'
-#
-#     def __init__(self, pooling_size, input_shape=None, **kwargs):
-#         super(MeanPooling2D, self).__init__()
-#
-#         self.pooling_size = pooling_size
-#         self.CHW_shape = input_shape  # (C, H, W)格式
-#
-#         # 输入输出数据及其形状
-#         self.input = None
-#         self.output = None
-#         self.d_input = None
-#         self.d_output = None
-#         self.input_shape = None  # (N, C, H, W)格式
-#         self.output_shape = None
-#
-#         # 中间计算结果
-#         self.mid = {}
-#
-#         # 模型基本成员
-#         self.trainable = True
-#         self.config = {}
-#         self.trainable_params = []
-#         self.grads = []
-#         self.previous_layer = None
-#         self.latter_layer = None
-#
-#     def build(self):
-#         # 如果具有前一层
-#         if self.previous_layer:
-#             self.input_shape = self.previous_layer.output_shape
-#         # 如果是第一层
-#         else:
-#             if not self.CHW_shape:
-#                 raise Exception('BuildError : MeanPoolnig2D层为第一层'
-#                                 '时必须在构造方法中提供input_shape参数!')
-#             self.input_shape = (None, self.CHW_shape[0],
-#                                 self.CHW_shape[1], self.CHW_shape[2])
-#
-#         self.output_shape = (self.input_shape[0],
-#                              self.input_shape[1],
-#                              self.input_shape[2] / self.pooling_size[0],
-#                              self.input_shape[3] / self.pooling_size[1])
-#         if self.pooling_size[0] != self.pooling_size[1]:
-#             raise Exception('BuildError : 目前MeanPooling2D层只支持方形采样！')
-#
-#         # 避免每次forward重复计算
-#         N, C, H, W = self.input_shape
-#         KN, KC, KH, KW = 1, C, self.pooling_size[0], self.pooling_size[1]
-#         stride = self.pooling_size[0]
-#         CH, CW = get_conv_shape(H, W, KH, KW, stride)
-#
-#         print N, C, H, W
-#         print KN, KC, KH, KW
-#
-#         self.mid['N'] = N
-#         self.mid['C'] = C
-#         self.mid['H'] = H
-#         self.mid['W'] = W
-#         self.mid['KN'] = KN
-#         self.mid['KC'] = KC
-#         self.mid['KH'] = KH
-#         self.mid['KW'] = KW
-#         self.mid['stride'] = stride
-#         self.mid['CH'], self.mid['CW'] = CH, CW
-#
-#     # def forward(self, _input):
-#     #     self.input = _input
-#     #     self.mid['N'] = self.input.shape[0]
-#     #     x = im2col_NCHW(self.input, self.mid['KH'], self.mid['KW'], self.mid['stride'])
-#     #     w = np.ones((self.mid['KN'], self.mid['KC']*self.mid['KH']*self.mid['KW']))
-#     #     w /= (self.mid['KH'] * self.mid['KW'])
-#     #     mul = MulGate.forward(w, x)
-#     #     mul = mul.reshape(self.mid['KN'], self.mid['N'], self.mid['CH'], self.mid['CW']).swapaxes(0, 1)
-#     #     self.mid['x'] = x
-#     #     self.mid['w'] = w
-#     #     self.mid['mul'] = mul
-#     #     self.output = mul
-#     #     return self.output
-#
-#     def forward(self, _input):
-#         self.input = _input
-#         self.mid['N'] = self.input.shape[0]
-#         self.output = np.empty(shape=(self.mid['N'], self.mid['C'], self.mid['CH'], self.mid['CW']),
-#                                dtype=np.double)
-#         for c in xrange(self)
-#         return self.output
-#
-#     def backward(self, _d_output):
-#         self.d_output = _d_output
-#         d_mul = self.d_output.swapaxes(0, 1)
-#         d_mul = d_mul.reshape(self.mid['KN'], self.mid['N']*self.mid['CH']*self.mid['CW'])
-#
-#         d_w, self.d_input = MulGate.backward(self.mid['w'], self.mid['x'], d_mul)
-#         self.d_input = col2im_NCHW(self.d_input, self.mid['KH'], self.mid['KW'],
-#                                    self.mid['CH'], self.mid['CW'], self.mid['stride'])
-#         return self.d_input
+
+class MeanPooling2D(Layer):
+    """
+    均值池化层
+    """
+
+    layer_type = 'MeanPooling2D'
+
+    def __init__(self, pooling_size, input_shape=None, **kwargs):
+        super(MeanPooling2D, self).__init__()
+
+        self.pooling_size = pooling_size
+        self.CHW_shape = input_shape  # (C, H, W)格式
+
+        # 输入输出数据及其形状
+        self.input = None
+        self.output = None
+        self.d_input = None
+        self.d_output = None
+        self.input_shape = [None, None, None, None]
+        self.output_shape = [None, None, None, None]
+
+        # 中间计算结果
+        self.mid = {}
+
+        # 模型基本成员
+        self.trainable = True
+        self.config = {}
+        self.trainable_params = []
+        self.grads = []
+        self.previous_layer = None
+        self.latter_layer = None
+
+    def build(self):
+        # ==================================
+        # 计算input_shape
+        # 如果具有前一层
+        if self.previous_layer:
+            self.input_shape = self.previous_layer.output_shape
+        # 如果是第一层
+        else:
+            if not self.CHW_shape:
+                raise Exception('BuildError : MeanPoolnig2D层为第一层'
+                                '时必须在构造方法中提供input_shape参数!')
+            self.input_shape[1:] = self.CHW_shape
+
+        if self.pooling_size[0] != self.pooling_size[1]:
+            raise Exception('BuildError : 目前MeanPooling2D层只支持方形采样！')
+        # ==================================
+        N, C, H, W = self.input_shape
+        self.output_shape = [N, C, H/self.pooling_size[0], W/self.pooling_size[1]]
+
+    def forward(self, _input):
+        self.input = _input
+        self.output_shape[0] = self.input_shape[0] = self.input.shape[0]
+
+        N, C, H, W = self.input_shape
+        KN, KC, KH, KW = 1, 1, self.pooling_size[0], self.pooling_size[1]
+        CH, CW = self.output_shape[2:]
+        stride = KH
+
+        rowing_w = np.ones(shape=(KN, KC*KH*KW), dtype=self.input.dtype) / (KH*KW)
+        columnize_x = np.empty(shape=(KH*KW, N*C*CH*CW), dtype=self.input.dtype)
+
+        for n in xrange(N):
+            for c in xrange(C):
+                ocol = (n*C+c)*CH*CW
+                columnize_x[0:KH*KW, ocol: ocol+CH*CW] = im2col_HW(self.input[n][c], KH, KW, stride)
+        rowing_output = MulGate.forward(rowing_w, columnize_x)
+        self.output = rowing_output.reshape(self.output_shape)
+
+        self.mid['rowing_w'] = rowing_w
+        self.mid['columnize_x'] = columnize_x
+
+        return self.output
+
+    def backward(self, _d_output):
+        self.d_output = _d_output
+
+        N, C, H, W = self.input_shape
+        KN, KC, KH, KW = 1, 1, self.pooling_size[0], self.pooling_size[1]
+        CH, CW = self.output_shape[2:]
+        stride = KH
+
+        rowing_w = self.mid['rowing_w']
+        columnize_x = self.mid['columnize_x']
+        d_input = np.empty(shape=self.input_shape, dtype=self.input.dtype)
+
+        d_rowing_output = self.d_output.reshape(1, N*C*CH*CW)
+        _, d_columnize_x = MulGate.backward(rowing_w, columnize_x, d_rowing_output)
+        for n in xrange(N):
+            for c in xrange(C):
+                ocol = (n*C+c)*CH*CW
+                d_input[n][c] = col2im_HW(d_columnize_x[0:KH*KW, ocol: ocol+CH*CW], KH, KW, CH, CW, stride)
+        self.d_input = d_input
+        return self.d_input
+
+
+

@@ -30,9 +30,9 @@ def normal(shape, scale=0.05):
 def glorot_normal(shape):
     if len(shape) == 2:
         nb_in, nb_out = shape[0], shape[1]
-    # 如果是4维NCHW数据格式
+    # 如果是4维KN*KC*KH*KW数据格式
     elif len(shape) == 4:
-        nb_in, nb_out = shape[2], shape[3]
+        nb_in, nb_out = np.product(shape[1:]), shape[0]
     else:
         raise Exception("Invalid shape: shape's length must be 2D!")
     # 标准差
