@@ -14,11 +14,17 @@
 
 import numpy as np
 from abc import ABCMeta, abstractmethod
+import sys
+
 
 from . import initializations
 from . import activations
 from .gates import AddGate, MulGate
 from .utils.conv_utils import *
+
+def print_size(name, var):
+    t = sys.getsizeof(var) * 1.0 / (1024 * 1024)
+    print "{} 's size:{}MB".format(name, t)
 
 class Layer(object):
     """
@@ -41,10 +47,11 @@ class Layer(object):
 
         # 模型基本成员
         self.trainable = False
-        self.mid = {}
-        self.config = {}
         self.trainable_params = []
         self.grads = []
+
+        self.mid = {}
+        self.config = {}
 
         self.previous_layer = None
         self.latter_layer = None
@@ -276,27 +283,59 @@ class Convolution2D(Layer):
 
     def forward(self, _input):
         self.input = _input
+        self.output_shape[0] = self.input_shape[0] = self.input.shape[0]
 
         # 计算形状
-        self.output_shape[0] = self.input_shape[0] = self.input.shape[0]
         N, C, H, W = self.input_shape
         KN, KC, KH, KW = self.w_shape
         CH, CW = self.output_shape[2:]
 
+        # 准备工作
+        x = self.input
+        rowing_w = self.w.reshape(KN, KH * KW * C)
+        # columnize_x = np.empty((N, KH * KW * C, CH * CW), dtype=np.double)
+        mul = np.empty(self.output_shape, dtype=self.input.dtype)
+
         # 前向计算
-        columnize_x = im2col_NCHW(self.input, KH, KW, self.stride)
-        rowing_w = self.w.reshape(KN, KC*KH*KW)
-        rowing_mul = MulGate.forward(rowing_w, columnize_x)
-        mul = rowing_mul.reshape(KN, N, CH, CW).swapaxes(0, 1)
+        for n in xrange(N):
+            # 将输入变形
+            x_n = np.array(x[n]).reshape(1, C, H, W)
+
+            # 计算
+            columnize_x_n = im2col_NCHW(x_n, KH, KW, self.stride)
+            rowing_mul_n = MulGate.forward(rowing_w, columnize_x_n)
+
+            # 将输出变形
+            mul_n = rowing_mul_n.reshape(1, KN, CH, CW)
+
+            # 保存中间计算结果
+            mul[n] = mul_n
+            # columnize_x[n] = columnize_x_n
+
         add = AddGate.forward(mul, self.b)
+        act = self.activation.forward(add)
 
         # 保存中间计算变量
-        self.mid['columnize_x'] = columnize_x
+        # self.mid['columnize_x'] = columnize_x
         self.mid['rowing_w'] = rowing_w
         self.mid['mul'] = mul
         self.mid['add'] = add
+        self.mid['act'] = act
 
-        self.output = add
+        print '======================================'
+        if not self.previous_layer:
+            print '第一层：前向'
+        else:
+            print '第二层：前向'
+        print 'input shape: ', self.input_shape
+        print_size('rowing_w', rowing_w)
+        # print_size('columnize_x', columnize_x)
+        print_size('mul', mul)
+        print_size('add', add)
+        print_size('act', act)
+
+
+        self.output = act
         return self.output
 
     def backward(self, _d_output):
@@ -308,20 +347,52 @@ class Convolution2D(Layer):
         CH, CW = self.output_shape[2:]
 
         # 提取中间计算变量
-        columnize_x = self.mid['columnize_x']
+        # columnize_x = self.mid['columnize_x']
         rowing_w = self.mid['rowing_w']
         mul = self.mid['mul']
         add = self.mid['add']
+        act = self.mid['act']
+
+        # 准备工作
+        d_x = np.empty_like(self.input, dtype=self.input.dtype)
+        d_w = np.zeros_like(self.w, dtype=np.double)
+
+        print '======================================'
+        if not self.previous_layer:
+            print '第一层：后向'
+        else:
+            print '第二层：后向'
+        print 'input shape: ', self.input_shape
+        print_size('d_x', d_x)
+        print_size('d_w', d_w)
 
         # 反向求导
-        d_mul, d_b = AddGate.backward(mul, self.b, self.d_output)
-        d_rowing_mul = d_mul.swapaxes(0, 1).reshape(KN, N*CH*CW)
-        d_w, self.d_input = MulGate.backward(rowing_w, columnize_x, d_rowing_mul)
-        d_w = d_w.reshape(self.w_shape)
-        self.d_input = col2im_NCHW(self.d_input, KH, KW, CH, CW, self.stride)
+        x = self.input
+        d_act = self.d_output
+        d_add = self.activation.backward(add, d_act)
+        d_mul, d_b = AddGate.backward(mul, self.b, d_add)
+
+        for n in xrange(N):
+            x_n = np.array(x[n]).reshape(1, C, H, W)
+
+            # 计算
+            columnize_x_n = im2col_NCHW(x_n, KH, KW, self.stride)
+
+            # columnize_x_n = columnize_x[n]
+            d_mul_n = d_mul[n]
+            d_rowing_mul_n = d_mul_n.reshape(KN, CH*CW)
+            d_rowing_w, d_columnize_x_n = MulGate.backward(rowing_w, columnize_x_n, d_rowing_mul_n)
+            d_x_n = col2im_NCHW(d_columnize_x_n, KH, KW, CH, CW, self.stride)
+            d_x_n = d_x_n.reshape(C, H, W)
+
+            d_x[n] = d_x_n
+
+            d_w_n = d_rowing_w.reshape(KN, KC, KH, KW)
+            d_w += d_w_n
 
         # 保存梯度
         self.grads = [d_w, d_b]
+        self.d_input = d_x
         return self.d_input
 
 
@@ -442,6 +513,7 @@ class MeanPooling2D(Layer):
         stride = KH
 
         rowing_w = np.ones(shape=(KN, KC*KH*KW), dtype=self.input.dtype) / (KH*KW)
+
         columnize_x = np.empty(shape=(KH*KW, N*C*CH*CW), dtype=self.input.dtype)
 
         for n in xrange(N):

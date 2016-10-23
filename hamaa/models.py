@@ -34,6 +34,10 @@ class Sequential(object):
         # 保存训练迭代过程信息
         self.logger = {}
 
+        # 当前计算模式
+        # train模式会保留各层中间计算结果
+        # test只保留每层输入与输出
+
     def add(self, layer):
         # 连接层与层
         if len(self.layers) > 0:

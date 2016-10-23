@@ -152,8 +152,8 @@ def run():
     # check_SigmoidGate()
     # check_TanhGate()
     # check_ReLUGate()
-    # check_Convolution2D()
-    check_MeanPooling2D()
+    check_Convolution2D()
+    # check_MeanPooling2D()
 
 if __name__ == '__main__':
     run()
