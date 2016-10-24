@@ -27,10 +27,18 @@ def to_categorical(y):
     return new_y
 
 
-def split_training_data(data, split_ratio):
+def split_training_data(data, nb_validation=None, split_ratio=None):
     x, y = data
     n = np.shape(x)[0]
-    idx = int(n * split_ratio)
+
+    if nb_validation:
+        idx = n - nb_validation
+    else:
+        if split_ratio:
+            idx = int(n * split_ratio)
+        else:
+            raise Exception('Error: nb_validation and split_ratio can not '
+                            'be None both!')
     training_x = x[:idx]
     training_y = y[:idx]
     validation_x = x[idx:]

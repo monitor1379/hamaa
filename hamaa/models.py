@@ -15,9 +15,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
+import sys
 
 from . import losses
 from .utils import np_utils
+from .utils.time_utils import ProgressBar
 
 
 class Sequential(object):
@@ -63,10 +65,11 @@ class Sequential(object):
         s += '===================================================='
         return s
 
-    def forward(self, _input):
+    def forward(self, _input, mode='test'):
         """前向计算"""
         data = _input
         for layer in self.layers:
+            layer.mode = mode
             data = layer.forward(data)
         return data
 
@@ -85,26 +88,37 @@ class Sequential(object):
         return d_data
 
     def train(self, training_data, nb_epochs, mini_batch_size, verbose=1, log_epoch=1, validation_data=None,
-              shuffle=True, **kwargs):
+              shuffle=True, evaluate_batch_size=100, **kwargs):
+        # 准备工作
         training_x, training_y = training_data
         n = training_x.shape[0]
         random_idx = range(n)
+        # 计算每个epoch需要批量计算的次数
         batch_times = np.ceil(n * 1.0 / mini_batch_size).astype(np.int32)  # 除法，向上取整
-        self.reset_logger()  # 清空logger
+        # 清空logger
+        self.reset_logger()
         self.logger['start_time_is_valid'] = False
+        # 初始化进度条
+        bar = ProgressBar(total=n, width=50)
+
         for epoch in xrange(nb_epochs):
             if not self.logger['start_time_is_valid']:
                 self.logger['start_time_is_valid'] = True
                 self.logger['start_time'] = datetime.now()
             if shuffle:
                 np.random.shuffle(random_idx)
+            # 每个epoch重置进度条的进度
+            bar.reset()
+            if verbose == 2:
+                bar.show()
+
             for i in xrange(batch_times):
                 batch_range = random_idx[i * mini_batch_size:(i + 1) * mini_batch_size]
                 batch_training_x = training_x[batch_range]
                 batch_training_y = training_y[batch_range]
                 # ========================================================
                 # 前向计算
-                batch_output = self.forward(batch_training_x)
+                batch_output = self.forward(batch_training_x, mode='train')
                 # 损失函数求导
                 diff = self.loss.diff(batch_training_y, batch_output)
                 # 反向传播，每一层调用自己的backward
@@ -118,24 +132,35 @@ class Sequential(object):
                 # 将所有层的参数与梯度交给优化器来处理
                 self.optimizer.update(self.trainable_params, self.grads)
                 # ========================================================
-            self.log(epoch, nb_epochs, training_data, validation_data, verbose, log_epoch)
+                # 更新当前进度
+                bar.move(batch_training_x.shape[0])
+                # 显示进度条。设立了显示间隔以避免刷新频繁
+                if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 100, 1)) == 0):
+                    bar.show(head='epoch: %2d/%d' % (epoch+1, nb_epochs))
+            self.evaluate_train_performance(epoch, nb_epochs, training_data, validation_data, verbose,
+                                            evaluate_batch_size, log_epoch)
 
-    def log(self, epoch, nb_epochs, training_data, validation_data, verbose, log_epoch):
+    def evaluate_train_performance(self, epoch, nb_epochs, training_data, validation_data,
+                                   verbose, evaluate_batch_size, log_epoch):
+
+        sys.stdout.write('evaluating the whole training_data and validation_data...')
+        sys.stdout.flush()
         if epoch + 1 == nb_epochs or epoch % log_epoch == 0:
             self.logger['epoch'].append(epoch)
-
             # 训练集acc以及loss
             training_x, training_y = training_data
-            training_acc, training_loss = self.evaluate_accuracy_and_loss(training_x, training_y)
-            text = 'epoch: %5d,\t training_acc: %.5f,\t training_loss: %.5f' % (epoch, training_acc, training_loss)
+            training_acc, training_loss = self.evaluate_accuracy_and_loss(training_x, training_y, evaluate_batch_size)
+            text = 'epoch: %2d,  training_acc: %.5f,  training_loss: %.5f' % (epoch+1, training_acc, training_loss)
             self.logger['training_acc'].append(training_acc)
             self.logger['training_loss'].append(training_loss)
 
             # 验证集acc以及loss
             if validation_data:
                 validation_x, validation_y = validation_data
-                validation_acc, validation_loss = self.evaluate_accuracy_and_loss(validation_x, validation_y)
-                text += ',\t validation_acc: %.5f,\t validation_loss: %.5f' % (validation_acc, validation_loss)
+                validation_acc, validation_loss = self.evaluate_accuracy_and_loss(validation_x,
+                                                                                  validation_y,
+                                                                                  evaluate_batch_size)
+                text += ',  validation_acc: %.5f,  validation_loss: %.5f' % (validation_acc, validation_loss)
                 self.logger['validation_acc'].append(validation_acc)
                 self.logger['validation_loss'].append(validation_loss)
 
@@ -146,29 +171,79 @@ class Sequential(object):
             sec = delta_time.seconds + (delta_time.microseconds / 1000000.0)
             text += ',\t time:%fs' % sec
             text += ',\t lr:%f' % self.optimizer.cur_lr
+            # 清空输出内容
+            sys.stdout.write('\r')
+            sys.stdout.write(' ' * 100)
+            sys.stdout.write('\r')
+            sys.stdout.flush()
+
             if verbose == 0:
                 pass
-            elif verbose == 1:
+            elif verbose == 1 or verbose == 2:
                 print text
 
-    def evaluate_accuracy(self, x, y):
-        y_pred = self.predict(x)
-        y_real = np_utils.to_categorical(y)
+    def evaluate_accuracy(self, x, y, evaluate_batch_size=None):
         n = x.shape[0]
-        return np.ones(n)[y_pred == y_real].sum() / n
+        idx = range(n)
+        if not evaluate_batch_size:
+            evaluate_batch_size = n
+        batch_times = np.ceil(n * 1.0 / evaluate_batch_size).astype(np.int32)  # 除法，向上取整
+        acc = 0.
+        for i in xrange(batch_times):
+            batch_range = idx[i * evaluate_batch_size:(i + 1) * evaluate_batch_size]
+            batch_x = x[batch_range]
+            batch_y = y[batch_range]
+            batch_n = batch_x.shape[0]
 
-    def evaluate_loss(self, x, y):
-        t = self.forward(x)
-        return self.loss.loss(y, t)
+            y_pred = self.predict(batch_x)
+            y_real = np_utils.to_categorical(batch_y)
+            acc += np.ones(batch_n)[y_pred == y_real].sum()
+        acc /= n
+        return acc
 
-    def evaluate_accuracy_and_loss(self, x, y):
-        output = self.forward(x)
-        loss = self.loss.loss(y, output)
-
-        y_pred = output.argmax(axis=1)
-        y_real = np_utils.to_categorical(y)
+    def evaluate_loss(self, x, y, evaluate_batch_size=None):
         n = x.shape[0]
-        acc = np.ones(n)[y_pred == y_real].sum() / n
+        idx = range(n)
+        if not evaluate_batch_size:
+            evaluate_batch_size = n
+        batch_times = np.ceil(n * 1.0 / evaluate_batch_size).astype(np.int32)  # 除法，向上取整
+        loss = 0.
+        for i in xrange(batch_times):
+            batch_range = idx[i * evaluate_batch_size:(i + 1) * evaluate_batch_size]
+            batch_x = x[batch_range]
+            batch_y = y[batch_range]
+            batch_n = batch_x.shape[0]
+
+            t = self.forward(batch_x)
+            loss += self.loss.loss(batch_y, t) * n
+
+        loss /= n
+        return loss
+
+    def evaluate_accuracy_and_loss(self, x, y, evaluate_batch_size=None):
+        """评估模式对于测试集x与标签y的准确率与损失函数值，对于复杂模型与大型数据集支持批量评估"""
+        n = x.shape[0]
+        idx = range(n)
+        if not evaluate_batch_size:
+            evaluate_batch_size = n
+        batch_times = np.ceil(n * 1.0 / evaluate_batch_size).astype(np.int32)  # 除法，向上取整
+        loss = 0.
+        acc = 0.
+        for i in xrange(batch_times):
+            batch_range = idx[i * evaluate_batch_size:(i + 1) * evaluate_batch_size]
+            batch_x = x[batch_range]
+            batch_y = y[batch_range]
+
+            batch_n = batch_x.shape[0]
+            output = self.forward(batch_x)
+            loss += self.loss.loss(batch_y, output) * batch_n
+
+            y_pred = output.argmax(axis=1)
+            y_real = np_utils.to_categorical(batch_y)
+            acc += np.ones(batch_n)[y_pred == y_real].sum()
+
+        loss /= n
+        acc /= n
         return acc, loss
 
     def reset_logger(self):

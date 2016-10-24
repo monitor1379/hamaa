@@ -24,6 +24,10 @@ def run():
     training_data, test_data = datasets.load_mnist_data(nb_training=6000, nb_test=10000, preprocess=True, flatten=True)
     training_data, validation_data = np_utils.split_training_data(training_data, 0.95)
 
+    print 'training_data:', training_data[0].shape
+    print 'validation_data:', validation_data[0].shape
+    print 'test_data:', test_data[0].shape
+
     model = Sequential()
     model.add(Dense(input_dim=784, output_dim=50, init='glorot_normal'))
     model.add(Activation('sigmoid'))

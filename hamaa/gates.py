@@ -71,9 +71,8 @@ class SigmoidGate:
         return z
 
     @staticmethod
-    def backward(x, d_z):
-        a = SigmoidGate.forward(x)
-        d_x = a * (1 - a) * d_z
+    def backward(x, z, d_z):
+        d_x = z * (1 - z) * d_z
         return d_x
 
 
@@ -87,9 +86,8 @@ class TanhGate:
         return (e1 - e2) / (e1 + e2)
 
     @staticmethod
-    def backward(x, d_z):
-        a = TanhGate.forward(x)
-        d_x = (1 - a**2) * d_z
+    def backward(x, z, d_z):
+        d_x = (1 - z**2) * d_z
         return d_x
 
 
@@ -102,7 +100,7 @@ class ReLUGate:
         return z
 
     @staticmethod
-    def backward(x, d_z):
+    def backward(x, z, d_z):
         d_x = np.ones_like(x)
         d_x[x < 0] = 0
         return d_x * d_z
@@ -117,7 +115,7 @@ class SoftmaxGate:
         return z / np.sum(z, axis=1, keepdims=True)
 
     @staticmethod
-    def backward(x, d_z):
+    def backward(x, z, d_z):
         raise Exception('Error: SoftmaxGate::backward() is not implemented yet!')
 
 
