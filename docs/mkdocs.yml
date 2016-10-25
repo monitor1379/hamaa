@@ -1,7 +1,7 @@
 site_name: Hamaa中文文档
-docs_dir: template
+docs_dir: .
 theme: readthedocs
-repo_url: http://github.com/monitor1379/hamaa
+repo_url: http://github.com/monitor1379/hamaa-docs-zn
 site_url: http://www.monitor1379.com
 
 
