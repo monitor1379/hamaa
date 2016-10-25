@@ -13,7 +13,6 @@
 """
 
 
-from .clib import im2colutils, col2imutils, im2rowutils
 from .utils import np_utils
 
 import numpy as np
