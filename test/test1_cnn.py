@@ -33,7 +33,7 @@ def run():
     print 'test_data:', test_data[0].shape
 
     model = Sequential()
-    model.add(Convolution2D(nb_kernel=15, kernel_height=5, kernel_width=5, activation='tanh', input_shape=(1, 28, 28)))
+    model.add(Convolution2D(nb_kernel=20, kernel_height=5, kernel_width=5, activation='tanh', input_shape=(1, 28, 28)))
     model.add(MeanPooling2D(pooling_size=(2, 2)))
     model.add(Convolution2D(nb_kernel=15, kernel_height=5, kernel_width=5, activation='tanh'))
     model.add(MeanPooling2D(pooling_size=(2, 2)))
@@ -49,7 +49,7 @@ def run():
     print model.summary()
 
     model.train(training_data=training_data,
-                nb_epochs=20,
+                nb_epochs=50,
                 mini_batch_size=10,
                 verbose=2,
                 validation_data=validation_data,

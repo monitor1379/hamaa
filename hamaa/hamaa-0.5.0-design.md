@@ -1,3 +1,5 @@
+[![badge]("https://readthedocs.org/projects/hamaa/badge/?version=latest")]("http://hamaa.readthedocs.io/zh_CN/latest/?badge=latest")
+
 # Hamaa 前言
 
 以文档主要面向Hamaa的开发者而不是使用者，
