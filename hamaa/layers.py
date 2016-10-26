@@ -53,7 +53,7 @@ class Layer(object):
         self.previous_layer = None
         self.latter_layer = None
 
-        self.mode = "test"
+        self.mode = "experiment"
         self.mid = {}
         self.config = {}
 
@@ -77,7 +77,7 @@ class Layer(object):
 
         if self.mode == 'train':
             return self.forward_train(_input)
-        elif self.mode == 'test':
+        elif self.mode == 'experiment':
             return self.forward_test(_input)
         else:
             raise Exception('Error: Unknown forward mode: {} !'.format(self.mode))
@@ -131,7 +131,7 @@ class Dense(Layer):
         self.previous_layer = None
         self.latter_layer = None
 
-        self.mode = "test"
+        self.mode = "experiment"
         self.mid = {}
         self.config = {}
 
@@ -216,7 +216,7 @@ class Activation(Layer):
         self.previous_layer = None
         self.latter_layer = None
 
-        self.mode = "test"
+        self.mode = "experiment"
         self.mid = {}
         self.config = {}
 
@@ -285,7 +285,7 @@ class Convolution2D(Layer):
         self.previous_layer = None
         self.latter_layer = None
 
-        self.mode = "test"
+        self.mode = "experiment"
         self.mid = {}
         self.config = {}
 
@@ -453,7 +453,7 @@ class Flatten(Layer):
         self.previous_layer = None
         self.latter_layer = None
 
-        self.mode = "test"
+        self.mode = "experiment"
         self.mid = {}
         self.config = {}
 
@@ -515,7 +515,7 @@ class MeanPooling2D(Layer):
         self.previous_layer = None
         self.latter_layer = None
 
-        self.mode = "test"
+        self.mode = "experiment"
         self.mid = {}
         self.config = {}
 

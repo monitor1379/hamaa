@@ -101,7 +101,7 @@ def check_Convolution2D():
     conv_layer.build()
 
     # =========================================================
-    # test x
+    # experiment x
     z = conv_layer.forward(x)
     d_z = z
     d_x = conv_layer.backward(d_z)
@@ -112,7 +112,7 @@ def check_Convolution2D():
     print sum_abs_err(d_x, grad_x)
 
     # =========================================================
-    # test w
+    # experiment w
     z = conv_layer.forward(x)
     d_z = z
     conv_layer.backward(d_z)

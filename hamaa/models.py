@@ -65,7 +65,7 @@ class Sequential(object):
         s += '===================================================='
         return s
 
-    def forward(self, _input, mode='test'):
+    def forward(self, _input, mode='experiment'):
         """前向计算"""
         data = _input
         for layer in self.layers:
