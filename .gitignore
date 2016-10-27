@@ -1,3 +1,5 @@
 .idea
 *.html
 experiment
+hamaa/datasets/mnist/gz
+hamaa/datasets/mnist/bin

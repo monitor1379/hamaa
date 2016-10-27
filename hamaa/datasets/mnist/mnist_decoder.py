@@ -53,14 +53,14 @@ import numpy as np
 # 当前路径
 module_path = os.path.dirname(__file__)
 # 训练集文件
-train_images_idx3_ubyte_file = module_path + '/bin/train-images.idx3-ubyte'
+train_images_idx3_ubyte_file = module_path + '/bin/train-images-idx3-ubyte'
 # 训练集标签文件
-train_labels_idx1_ubyte_file = module_path + '/bin/train-labels.idx1-ubyte'
+train_labels_idx1_ubyte_file = module_path + '/bin/train-labels-idx1-ubyte'
 
 # 测试集文件
-test_images_idx3_ubyte_file = module_path + '/bin/t10k-images.idx3-ubyte'
+test_images_idx3_ubyte_file = module_path + '/bin/t10k-images-idx3-ubyte'
 # 测试集标签文件
-test_labels_idx1_ubyte_file = module_path + '/bin/t10k-labels.idx1-ubyte'
+test_labels_idx1_ubyte_file = module_path + '/bin/t10k-labels-idx1-ubyte'
 
 
 def decode_idx3_ubyte(idx3_ubyte_file, num_data=-1):
