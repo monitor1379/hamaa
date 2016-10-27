@@ -20,5 +20,6 @@ install:
 
 script:
   - pwd
+  - ll
   - python setup.py install
-  - python example1_or_nn.py
+  - python examples/example1_or_nn.py
