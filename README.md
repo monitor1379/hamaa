@@ -1,5 +1,5 @@
 <p align="center">
-	<img width=300 src="docs/images/hamaa-logo.svg" />
+	<img src="docs/images/hamaa-logo.svg" />
 </p>
 
 <p align="center">
