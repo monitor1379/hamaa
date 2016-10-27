@@ -32,7 +32,7 @@ def split_training_data(data, nb_validation=None, split_ratio=None):
     n = np.shape(x)[0]
 
     if nb_validation:
-        if nb_validation >= x:
+        if nb_validation >= n:
             raise Exception('Error: nb_validation is bigger than x.shape[0]!')
         else:
             idx = n - nb_validation
