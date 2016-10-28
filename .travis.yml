@@ -19,7 +19,9 @@ install:
   - conda info -a
 
 script:
-  - pwd
-  - ll
-  - python setup.py install
-  - python examples/example1_or_nn.py
+  # 安装依赖
+  - pip install -r requirements.txt
+  # 安装Hamaa
+  - pip install .
+  # 测试，-v表示输出测试详情
+  - nosetests -v
