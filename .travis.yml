@@ -21,4 +21,4 @@ install:
 script:
   - pip install -r requirements.txt
   - pip install .
-  - python examples/example1_or_nn.py
+  - nosetests
