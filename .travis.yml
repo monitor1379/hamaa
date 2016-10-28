@@ -19,6 +19,9 @@ install:
   - conda info -a
 
 script:
+  # 安装依赖
   - pip install -r requirements.txt
+  # 安装Hamaa
   - pip install .
-  - nosetests
+  # 测试，-v表示输出测试详情
+  - nosetests -v
