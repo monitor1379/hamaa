@@ -16,5 +16,6 @@ script:
   - pip install .
   # 跑测试并检测代码覆盖率
   - nosetests -v --with-coverage
-  - codecov
   
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
