@@ -56,9 +56,22 @@ class SGD(Optimizer):
         self.iterations = 0
 
     def update(self, params, grads):
+        """
+        # Arguments:
+            params: list对象，params中的一个成员是一个由网络层的可训练
+            参数组成的list对象，
+            即`params=[[layer 1 params], [layer 2 params], ...]`
+
+            grads:
+        """
         # 如果是第一轮，则初始化“上次参数改变量”为0
         if self.iterations == 0:
             self.pre_velocities = [0] * len(params)
+
+        # 由于有些层不包含参数，因此其可训练参数是一个空列表([])，
+        # 所以通过将二维列表转换为一维列表来去除掉空列表，并方便后续计算
+        params = [param for layer_param in params for param in layer_param]
+        grads = [grad for layer_grad in grads for grad in layer_grad]
 
         # 开始更新模型参数，同时保存“本次参数改变量”
         for param, grad, pre_velocity in zip(params, grads, self.pre_velocities):

@@ -43,7 +43,7 @@ def toc(verbose=False):
 class ProgressBar:
     """控制台进度条类"""
 
-    def __init__(self, total, width=20):
+    def __init__(self, total=0, width=20):
         """
         :param total: 进度最大值，整数类型
         :param width: 进图条显示宽度，单位为一个字符占位格

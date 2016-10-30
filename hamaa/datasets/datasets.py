@@ -24,9 +24,11 @@ from .mnist import mnist_decoder
 from ..utils import np_utils
 
 
-def load_or_data():
+def load_or_data(one_hot=True):
     x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
     y = np.array([0, 1, 1, 1])
+    if one_hot:
+        y = np_utils.to_one_hot(y, 2)
     return x, y
 
 

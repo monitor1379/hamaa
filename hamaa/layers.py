@@ -32,6 +32,7 @@ class Layer(object):
     """
     神经网络中所有layer的顶层抽象类，所有子类需要实现
     前向计算以及后向求导两个方法。
+
     """
 
     layer_type = 'Layer'
@@ -77,7 +78,7 @@ class Layer(object):
 
         if self.mode == 'train':
             return self.forward_train(_input)
-        elif self.mode == 'experiment':
+        elif self.mode == 'test':
             return self.forward_test(_input)
         else:
             raise Exception('Error: Unknown forward mode: {} !'.format(self.mode))

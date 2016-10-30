@@ -4,8 +4,6 @@ python:
 
 install:
   # 在CI服务器上安装集成测试工具
-  - pip install coverage
-  - pip install codecov
   - pip install nose
 
 
@@ -15,7 +13,7 @@ script:
   # 安装Hamaa
   - pip install .
   # 跑测试并检测代码覆盖率
-  - nosetests -v --with-coverage
-  
+  - nosetests -v
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)

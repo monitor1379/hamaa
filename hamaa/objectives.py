@@ -6,7 +6,7 @@
 
 @version: 1.0
 @license: Apache Licence
-@file: losses.py
+@file: objectives.py
 @time: 2016/9/11 12:07
 
 损失函数

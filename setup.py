@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 print find_packages()
 setup(
     name='hamaa',
-    version='0.5.0',
+    version='0.6.0',
     url='https://github.com/monitor1379/hamaa',
     license='GPL-3.0',
     author='monitor1379',

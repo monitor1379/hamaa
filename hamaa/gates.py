@@ -118,3 +118,5 @@ class SoftmaxGate:
         raise Exception('Error: SoftmaxGate::backward() is not implemented yet!')
 
 
+if __name__ == '__main__':
+    pass

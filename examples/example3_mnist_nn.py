@@ -36,7 +36,7 @@ def run():
     model.add(Dense(output_dim=10, init='glorot_normal'))
     model.add(Activation('sigmoid'))
 
-    model.set_loss(loss='categorical_crossentropy')
+    model.set_objective(loss='categorical_crossentropy')
     model.set_optimizer(optimizer=SGD(lr=0.3, momentum=0.2, decay=1e-6))
 
     print model.summary()

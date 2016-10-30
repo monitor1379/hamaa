@@ -11,3 +11,10 @@
 
 
 """
+
+
+from . import gates
+
+
+__version__ = '0.6'
+
