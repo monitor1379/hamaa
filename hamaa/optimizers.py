@@ -5,7 +5,7 @@
 @site: www.monitor1379.com
 
 @version: 1.0
-@license: Apache Licence
+@license: GNU General Public License(Version 3)
 @file: optimizers.py
 @time: 2016/9/20 10:47
 
@@ -13,7 +13,6 @@
 """
 
 from abc import ABCMeta, abstractmethod
-import numpy as np
 
 
 class Optimizer(object):

@@ -10,6 +10,8 @@ install:
 script:
   # 安装依赖
   - pip install -r requirements.txt
+  # 编译Python C扩展
+  - python setup.py build_ext
   # 安装Hamaa
   - pip install .
   # 跑测试并检测代码覆盖率

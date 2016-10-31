@@ -5,7 +5,7 @@
 @site: www.monitor1379.com
 
 @version: 1.0
-@license: Apache Licence
+@license: GNU General Public License(Version 3)
 @file: models.py
 @time: 2016/9/20 9:01
 
@@ -327,5 +327,11 @@ class Sequential(object):
                            validation_data=validation_data,
                            shuffle=shuffle,
                            evaluate_batch_size=evaluate_batch_size)
+
+    def plot_prediction(self, data):
+        self.trainer.plot_prediction(self, data)
+
+    def plot_training_iteration(self):
+        self.trainer.plot_training_iteration()
 
 

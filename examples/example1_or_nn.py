@@ -12,10 +12,9 @@
 
 """
 
+from hamaa.datasets import datasets
 from hamaa.layers import Dense, Activation
 from hamaa.models import Sequential
-from hamaa.datasets import datasets
-from hamaa.utils import np_utils
 from hamaa.optimizers import SGD
 
 
@@ -32,14 +31,16 @@ def run():
     data = (x, y)
 
     model.train(training_data=data,
-                nb_epochs=10000,
+                nb_epochs=10,
                 mini_batch_size=1,
-                verbose=1,
+                verbose=2,
                 validation_data=data,
-                log_epoch=1000)
-    print model.evaluate_accuracy(x, y)
-    # model.plot_prediction(data=data)
-    # model.plot_training_iteration()
+                log_epoch=3)
+
+    print '分类准确率: ', model.evaluate_accuracy(x, y)
+
+    model.plot_prediction(data=data)
+    model.plot_training_iteration()
 
 
 if __name__ == '__main__':

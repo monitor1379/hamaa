@@ -12,16 +12,15 @@
 
 """
 
-
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 import sys
+import time
+import warnings
 
-from . import objectives
+import matplotlib.pyplot as plt
+import numpy as np
+
 from .utils import np_utils
 from .utils.time_utils import ProgressBar
-import warnings
 
 
 class SequentialTrainer(object):
@@ -55,6 +54,7 @@ class SequentialTrainer(object):
         model.optimizer.update(model.trainable_params, model.grads)
 
 
+
     def naive_train(self, model, training_data, nb_epochs, mini_batch_size, shuffle=True, **kwargs):
         """一个源代码最简洁的批量训练函数框架，仅用于源代码参考与扩展，不建议使用。"""
         warnings.warn("naive_train() is deprecated. Use train() instead.", DeprecationWarning)
@@ -83,6 +83,16 @@ class SequentialTrainer(object):
               validation_data=None, shuffle=True, evaluate_batch_size=100, **kwargs):
         """训练模型.TODO"""
 
+        assert log_epoch > 0, 'log_epoch:{} must be larger than zero!'.format(log_epoch)
+        assert verbose in [0, 1, 2], 'invalid verbose:{}'.format(verbose)
+
+        # 当log_epoch不为1时，不推荐使用进度条功能。
+        if log_epoch != 1 and verbose == 2:
+            raise Exception('Invalid log_epoch and verbose: verbose为2时log_epoch只能为1!\n'
+                            '原因：进图条功能用于在控制台显示每个epoch的完成进度，\n'
+                            '如果log_epoch > 1，说明控制台每隔log_epoch个epoch才显示一次，\n'
+                            '会和进图条的显示功能产生冲突。')
+
         training_x, training_y = training_data
         n = training_x.shape[0]
         random_idx = range(n)
@@ -92,18 +102,17 @@ class SequentialTrainer(object):
         self.reset_logger()
         self.logger['need_to_refresh_start_time'] = True
 
-        bar = ProgressBar()
-        bar.width = 50
+        bar = ProgressBar(total=n, width=20)
         bar.reset()
         if verbose == 2:
-            bar.show()
+            bar.show(head='epoch: %2d/%d' % (0, nb_epochs))
 
         for epoch in xrange(1, nb_epochs+1):
             if self.logger['need_to_refresh_start_time']:
                 self.logger['need_to_refresh_start_time'] = False
                 self.logger['start_time'] = time.time()
-            if epoch == 1 or epoch == nb_epochs or epoch % log_epoch == 0:
-                bar.show()
+
+            bar.reset()
 
             if shuffle:
                 np.random.shuffle(random_idx)
@@ -115,10 +124,9 @@ class SequentialTrainer(object):
 
                 # 更新当前进度
                 bar.move(batch_training_x.shape[0])
-
                 # 显示进度条。设立了显示间隔以避免刷新频繁
                 if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 100, 1)) == 0):
-                    bar.show(head='epoch: %2d/%d' % (epoch+1, nb_epochs))
+                    bar.show(head='epoch: %2d/%d' % (epoch, nb_epochs))
 
             if epoch == 1 or epoch == nb_epochs or epoch % log_epoch == 0:
                 self.__evaluate_train_performance(model,
@@ -129,7 +137,6 @@ class SequentialTrainer(object):
                                                   verbose,
                                                   evaluate_batch_size,
                                                   log_epoch)
-
 
     def __evaluate_train_performance(self, model, epoch, nb_epochs, training_data, validation_data,
                                      verbose, evaluate_batch_size, log_epoch):
@@ -211,7 +218,7 @@ class SequentialTrainer(object):
 
         plt.show()
 
-    def plot_prediction(self, data):
+    def plot_prediction(self, model, data):
         """绘画出决策边界。只适用于数据维数为2的情况。"""
         x, y = data
         # 如果y是one-hot，则重置为categorical
@@ -231,7 +238,7 @@ class SequentialTrainer(object):
         yy = np.arange(y_min, y_max, h)
         xx, yy = np.meshgrid(xx, yy)
         Z = np.c_[xx.ravel(), yy.ravel()]
-        T = self.predict(Z)
+        T = model.predict(Z)
         T = T.reshape(xx.shape)
         plt.figure('prediction')
         plt.xlim([x_min, x_max])

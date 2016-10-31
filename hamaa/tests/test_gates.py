@@ -5,7 +5,7 @@
 @site: www.monitor1379.com
 
 @version: 1.0
-@license: Apache Licence
+@license: GNU General Public License(Version 3)
 @file: test_gates.py
 @time: 2016/10/27 23:40
 

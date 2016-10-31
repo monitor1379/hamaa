@@ -5,22 +5,19 @@
 @site: www.monitor1379.com
 
 @version: 1.0
-@license: Apache Licence
+@license: GNU General Public License(Version 3)
 @file: layers.py
 @time: 2016/9/20 9:36
 
 
 """
 
-import numpy as np
 import sys
 
-
-from . import initializations
 from . import activations
+from . import initializations
 from .gates import AddGate, MulGate
 from .utils.conv_utils import *
-from .utils.time_utils import tic, toc
 
 
 def print_size(name, var):
