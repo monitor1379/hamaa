@@ -12,9 +12,6 @@
 
 """
 
-
-import numpy as np
-
 from hamaa.gates import *
 from hamaa.layers import *
 from hamaa.utils.np_utils import eval_numerical_gradient_array, sum_abs_err

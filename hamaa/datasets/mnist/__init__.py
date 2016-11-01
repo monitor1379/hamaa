@@ -11,3 +11,5 @@
 
 
 """
+
+from . import mnist_decoder

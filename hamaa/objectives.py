@@ -13,8 +13,10 @@
 """
 
 import numpy as np
-from .utils import np_utils
+
 from .gates import SoftmaxGate
+from .utils import np_utils
+
 
 class MeanSquareError:
 

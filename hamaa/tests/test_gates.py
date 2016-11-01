@@ -11,8 +11,8 @@
 
 
 """
+
 from hamaa.gates import *
-import numpy as np
 
 
 def test_forward():

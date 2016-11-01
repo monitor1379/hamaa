@@ -46,8 +46,9 @@ The sizes in each dimension are 4-byte integers (MSB first, high endian, like in
 The data is stored like in a C array, i.e. the index in the last dimension changes the fastest.
 """
 
-import struct
 import os
+import struct
+
 import numpy as np
 
 # 当前路径

@@ -15,8 +15,8 @@
 import numpy as np
 
 from . import objectives
-from .utils import np_utils
 from .trainers import SequentialTrainer
+from .utils import np_utils
 
 
 class Sequential(object):

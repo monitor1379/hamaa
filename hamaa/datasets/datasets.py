@@ -12,13 +12,12 @@
 数据集加载文件
 """
 
+import gzip
 import os
+import urllib
 
 import numpy as np
-import skimage.io
-import sklearn.datasets
-import urllib
-import gzip
+from PIL import Image
 
 from .mnist import mnist_decoder
 from ..utils import np_utils
@@ -45,13 +44,48 @@ def load_xor_data():
 
 
 def load_moons_data(nb_data, noise):
-    return sklearn.datasets.make_moons(nb_data, noise=noise)
+    """Make two interleaving half circles.
+
+       A simple toy dataset to visualize clustering and classification
+       algorithms.
+
+       # Argument:
+           nb_data: int, optional (default=100).
+           The total number of points generated.
+
+           noise: double or None (default=None).
+           Standard deviation of Gaussian noise added to the data.
+
+
+       # Note:
+           x: array of shape [nb_data, 2].
+
+           y: array of shape [nb_data].
+           The integer labels (0 or 1) for class membership of each sample.
+       """
+
+    n_samples_out = nb_data // 2
+    n_samples_in = nb_data - n_samples_out
+
+    outer_circ_x = np.cos(np.linspace(0, np.pi, n_samples_out))
+    outer_circ_y = np.sin(np.linspace(0, np.pi, n_samples_out))
+    inner_circ_x = 1 - np.cos(np.linspace(0, np.pi, n_samples_in))
+    inner_circ_y = 1 - np.sin(np.linspace(0, np.pi, n_samples_in)) - .5
+
+    x = np.vstack((np.append(outer_circ_x, inner_circ_x),
+                   np.append(outer_circ_y, inner_circ_y))).T
+    y = np.hstack([np.zeros(n_samples_in, dtype=np.intp),
+                   np.ones(n_samples_out, dtype=np.intp)])
+
+    # 加上方差为noise的服从正态分布的噪声数据
+    x += np.random.normal(scale=noise, size=x.shape)
+    return x, y
 
 
 def download_mnist_data():
     filenames = ["train-images-idx3-ubyte.gz", "train-labels-idx1-ubyte.gz",
                  "t10k-images-idx3-ubyte.gz", "t10k-labels-idx1-ubyte.gz"]
-    
+
     # 创建本地存放文件夹，存放地点为hamaa/datasets/mnist/gz
     module_path = os.path.dirname(__file__)
     mnist_gz_dir = module_path + os.sep + 'mnist' + os.sep + 'gz' + os.sep
@@ -111,5 +145,5 @@ def load_mnist_data(nb_training, nb_test, preprocess=False, flatten=True):
 def load_lena():
     module_path = os.path.dirname(__file__)
     image_path = module_path + os.sep + 'images' + os.sep + 'lena.jpg'
-    im = skimage.io.imread(image_path)
-    return im
+    im = Image.open(image_path)
+    return np.array(im)
