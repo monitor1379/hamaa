@@ -21,7 +21,7 @@ from hamaa.optimizers import SGD
 
 def run():
     model = Sequential()                                        # 创建一个神经网络模型
-    model.add(Dense(input_dim=2, output_dim=2, init='uniform'))  # 添加一个输入神经元数是2、输出神经元数是2的全连接层
+    model.add(Dense(input_dim=2, output_dim=2, init='uniform')) # 添加一个输入神经元数是2、输出神经元数是2的全连接层
     model.add(Activation('sigmoid'))                            # 添加一个激活函数为sigmoid的激活层
     model.set_objective('mse')                                  # 设置目标函数/损失函数为均方差
     model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))  # 设置优化器为随机梯度下降法
