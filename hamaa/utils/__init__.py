@@ -16,3 +16,6 @@ from . import conv_utils
 from . import image_utils
 from . import np_utils
 from . import time_utils
+from . import vis_utils
+
+

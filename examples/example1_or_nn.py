@@ -9,7 +9,8 @@
 @file: example1_or_nn.py
 @time: 2016/10/11 0:07
 
-
+使用Hama构建单层神经网络来解决或问题的一个简洁的例子。
+其中包含了创建、训练、测试一个神经网络必备的所有函数。
 """
 
 from hamaa.datasets import datasets
@@ -19,30 +20,16 @@ from hamaa.optimizers import SGD
 
 
 def run():
-    model = Sequential()
-    model.add(Dense(input_dim=2, output_dim=2, init='normal'))
-    model.add(Activation('sigmoid'))
-    model.set_objective('mse')
-    model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))
-
-    print model.summary()
-
-    x, y = datasets.load_or_data()
-    data = (x, y)
-
-    model.train(training_data=data,
-                nb_epochs=10,
-                mini_batch_size=1,
-                verbose=2,
-                validation_data=data,
-                log_epoch=3)
-
-    print '分类准确率: ', model.evaluate_accuracy(x, y)
-
-    model.plot_prediction(data=data)
-    model.plot_training_iteration()
+    model = Sequential()                                        # 创建一个神经网络模型
+    model.add(Dense(input_dim=2, output_dim=2, init='uniform'))  # 添加一个输入神经元数是2、输出神经元数是2的全连接层
+    model.add(Activation('sigmoid'))                            # 添加一个激活函数为sigmoid的激活层
+    model.set_objective('mse')                                  # 设置目标函数/损失函数为均方差
+    model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))  # 设置优化器为随机梯度下降法
+    print model.summary()                                       # 打印模型的详细信息
+    x, y = datasets.load_or_data()                              # 加载数据
+    model.train(training_data=(x, y), nb_epochs=10)             # 开始训练，设置训练周期为10
+    print '分类准确率: ', model.evaluate_accuracy(x, y)          # 评估模型的准确率
 
 
 if __name__ == '__main__':
     run()
-

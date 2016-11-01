@@ -58,7 +58,7 @@ class Sequential(object):
         """
         if len(self.layers) > 0:
             self.layers[-1].latter_layer = layer
-            layer.previous_layer = self.layers[-1].latter_layer
+            layer.previous_layer = self.layers[-1]
         self.layers.append(layer)
         # 调用网络层对象的build方法来初始化网络层对象的参数
         layer.build()
@@ -98,12 +98,12 @@ class Sequential(object):
 
     def summary(self):
         """返回一个描述了模型构造信息的字符串。"""
-        info = '=====================  summary =====================\n'
+        info = '================ model summary ==============================\n'
         for layer in self.layers:
             info += layer.summary() + '\n'
         info += 'loss: ' + str(self.objective.__name__) + '\n'
         info += 'optimizer: ' + str(self.optimizer.__class__.__name__) + '\n'
-        info += '===================================================='
+        info += '============================================================='
         return info
 
     def forward(self, input_data, mode='test'):
@@ -288,7 +288,7 @@ class Sequential(object):
         loss /= n
         return acc, loss
 
-    def train(self, training_data, nb_epochs, mini_batch_size, verbose=1, log_epoch=1,
+    def train(self, training_data, nb_epochs, mini_batch_size=1, verbose=1, log_epoch=1,
               validation_data=None, shuffle=True, evaluate_batch_size=100, **kwargs):
         # TODO
         """训练模型。

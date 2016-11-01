@@ -4,3 +4,5 @@ experiment
 hamaa/datasets/mnist/gz
 hamaa/datasets/mnist/bin
 .coverage
+hamaa/ext/build
+hamaa/ext/*.pyd

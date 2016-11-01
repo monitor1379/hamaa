@@ -1,5 +1,9 @@
 # Hamaa: a Simple and Naive Deep Learning library based on Python
 
+[![Documentation Status](https://readthedocs.org/projects/hamaa/badge/?version=latest)](http://hamaa.readthedocs.io/zh_CN/latest/?badge=latest) 
+[![Build Status](https://travis-ci.org/monitor1379/hamaa.svg?branch=master)](https://travis-ci.org/monitor1379/hamaa)
+[![codecov](https://codecov.io/gh/monitor1379/hamaa/branch/master/graph/badge.svg)](https://codecov.io/gh/monitor1379/hamaa)
+
 ## 没错，你刚发现了Hamaa！
 
 Hamaa是一个遵循极简和高度模块化的深度学习框架，由Python编写，为支持快速实验而生。

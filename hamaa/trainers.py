@@ -24,17 +24,16 @@ from .utils.time_utils import ProgressBar
 
 
 class SequentialTrainer(object):
-
     def __init__(self):
         self.logger = {}
 
     def reset_logger(self):
         self.logger = {}
-        self.logger.setdefault('epoch', [0.])
-        self.logger.setdefault('training_acc', [0.])
-        self.logger.setdefault('training_loss', [0.])
-        self.logger.setdefault('validation_acc', [0.])
-        self.logger.setdefault('validation_loss', [0.])
+        self.logger.setdefault('epoch', [])
+        self.logger.setdefault('training_acc', [])
+        self.logger.setdefault('training_loss', [])
+        self.logger.setdefault('validation_acc', [])
+        self.logger.setdefault('validation_loss', [])
 
     def train_by_batch(self, model, batch_training_data):
         """一个批次的训练过程"""
@@ -53,8 +52,6 @@ class SequentialTrainer(object):
         # 更新模型的参数
         model.optimizer.update(model.trainable_params, model.grads)
 
-
-
     def naive_train(self, model, training_data, nb_epochs, mini_batch_size, shuffle=True, **kwargs):
         """一个源代码最简洁的批量训练函数框架，仅用于源代码参考与扩展，不建议使用。"""
         warnings.warn("naive_train() is deprecated. Use train() instead.", DeprecationWarning)
@@ -69,7 +66,7 @@ class SequentialTrainer(object):
         # 求每个epoch中批量计算的次数
         batch_times = np.ceil(n * 1.0 / mini_batch_size).astype(np.int32)
 
-        for epoch in xrange(1, nb_epochs+1):  # 对于每个epoch(从1到nb_epochs)
+        for epoch in xrange(1, nb_epochs + 1):  # 对于每个epoch(从1到nb_epochs)
             if shuffle:
                 np.random.shuffle(random_idx)  # 打乱数据索引
             for i in xrange(batch_times):  # 对于每次批量计算
@@ -107,7 +104,7 @@ class SequentialTrainer(object):
         if verbose == 2:
             bar.show(head='epoch: %2d/%d' % (0, nb_epochs))
 
-        for epoch in xrange(1, nb_epochs+1):
+        for epoch in xrange(1, nb_epochs + 1):
             if self.logger['need_to_refresh_start_time']:
                 self.logger['need_to_refresh_start_time'] = False
                 self.logger['start_time'] = time.time()
@@ -128,18 +125,18 @@ class SequentialTrainer(object):
                 if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 100, 1)) == 0):
                     bar.show(head='epoch: %2d/%d' % (epoch, nb_epochs))
 
+            bar.clear()
+
             if epoch == 1 or epoch == nb_epochs or epoch % log_epoch == 0:
                 self.__evaluate_train_performance(model,
                                                   epoch,
-                                                  nb_epochs,
                                                   training_data,
                                                   validation_data,
                                                   verbose,
-                                                  evaluate_batch_size,
-                                                  log_epoch)
+                                                  evaluate_batch_size)
 
-    def __evaluate_train_performance(self, model, epoch, nb_epochs, training_data, validation_data,
-                                     verbose, evaluate_batch_size, log_epoch):
+    def __evaluate_train_performance(self, model, epoch, training_data, validation_data,
+                                     verbose, evaluate_batch_size):
         sys.stdout.write('evaluating the whole training_data and validation_data...')
         sys.stdout.flush()
         self.logger['epoch'].append(epoch)
@@ -149,7 +146,9 @@ class SequentialTrainer(object):
         training_acc, training_loss = model.evaluate_accuracy_and_loss(training_x,
                                                                        training_y,
                                                                        evaluate_batch_size)
-        text = 'epoch: %2d,  training_acc: %.5f,  training_loss: %.5f' % (epoch, training_acc, training_loss)
+        text = 'epoch: {:2},  train_acc: {:7.3f}%,  train_loss: {:.4f}'.format(epoch,
+                                                                                   training_acc * 100,
+                                                                                   training_loss)
         self.logger['training_acc'].append(training_acc)
         self.logger['training_loss'].append(training_loss)
 
@@ -159,7 +158,8 @@ class SequentialTrainer(object):
             validation_acc, validation_loss = model.evaluate_accuracy_and_loss(validation_x,
                                                                                validation_y,
                                                                                evaluate_batch_size)
-            text += ',  validation_acc: %.5f,  validation_loss: %.5f' % (validation_acc, validation_loss)
+            text += ',  valid_acc: {:7.3f}%,  valid_loss: {:.4f}'.format(validation_acc * 100,
+                                                                                 validation_loss)
             self.logger['validation_acc'].append(validation_acc)
             self.logger['validation_loss'].append(validation_loss)
 
@@ -167,8 +167,8 @@ class SequentialTrainer(object):
         self.logger['end_time'] = time.time()
         self.logger['need_to_refresh_start_time'] = True
         delta_time = self.logger['end_time'] - self.logger['start_time']
-        text += ',\t time:%.3fs' % delta_time
-        text += ',\t lr:%f' % model.optimizer.cur_lr
+        text += ',  time:%.3fs' % delta_time
+        text += ',  lr:%f' % model.optimizer.cur_lr
 
         # 清空输出内容
         sys.stdout.write('\r')
@@ -183,37 +183,54 @@ class SequentialTrainer(object):
 
     def plot_training_iteration(self):
         """画出迭代过程中，训练准确率、验证准确率、训练损失、验证损失随着迭代期变化的图像"""
-
         epoch = self.logger.get('epoch')
         training_acc = self.logger.get('training_acc')
         training_loss = self.logger.get('training_loss')
         validation_acc = self.logger.get('validation_acc')
         validation_loss = self.logger.get('validation_loss')
 
+        # 绘画准确率随着训练周期的折线图
         plt.subplot(311)
+        plt.xlim([1, epoch[-1]])
         plt.ylim([0, 1.0])
         plt.xlabel('epoch')
         plt.ylabel('accuracy')
         plt.plot(epoch, training_acc, label='train')
-        plt.plot(epoch, validation_acc, label='validation')
+        if validation_acc:
+            plt.plot(epoch, validation_acc, label='validation')
         plt.legend(loc=0)
 
+        # 绘画准确率随着训练周期的折线图的放大版本
         plt.subplot(312)
-        m = max(np.max(training_acc), np.max(validation_acc))
-        plt.ylim([m - 0.05, m + 0.01])
+        if validation_acc:
+            top = max(np.max(training_acc), np.max(validation_acc))
+            bottom = min(np.min(training_acc), np.min(validation_acc))
+        else:
+            top = np.max(training_acc)
+            bottom = np.min(training_acc)
+        plt.xlim([1, epoch[-1]])
+        plt.ylim([bottom - 0.01, top + 0.01])
         plt.xlabel('epoch')
         plt.ylabel('accuracy')
         plt.plot(epoch, np.ones_like(epoch), 'k--')
         plt.plot(epoch, training_acc, label='train')
-        plt.plot(epoch, validation_acc, label='validation')
+        if validation_acc:
+            plt.plot(epoch, validation_acc, label='validation')
         plt.legend(loc=0)
 
+        # 绘画损失函数值随着训练周期的折线图
         plt.subplot(313)
-        plt.ylim([0, 0.1 + max(np.max(training_loss), np.max(validation_loss))])
+        if validation_acc:
+            top = max(np.max(training_loss), np.max(validation_loss))
+        else:
+            top = np.max(training_loss)
+        plt.xlim([1, epoch[-1]])
+        plt.ylim([0, 0.1 + top])
         plt.xlabel('epoch')
         plt.ylabel('loss')
         plt.plot(epoch, training_loss, label='training')
-        plt.plot(epoch, validation_loss, label='training')
+        if validation_loss:
+            plt.plot(epoch, validation_loss, label='validation')
         plt.legend(loc=0)
 
         plt.show()
@@ -246,4 +263,3 @@ class SequentialTrainer(object):
         plt.contourf(xx, yy, T, cmap=plt.cm.Spectral)
         plt.scatter(x[:, 0], x[:, 1], c=y, s=30, cmap=plt.cm.Spectral)
         plt.show()
-

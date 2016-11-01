@@ -64,8 +64,9 @@ class ProgressBar:
     def clear(self):
         """清空进度条"""
         sys.stdout.write('\r')
-        sys.stdout.write(' ' * (self.width + 10))
+        sys.stdout.write(' ' * (self.width + 50))
         sys.stdout.write('\r')
+        sys.stdout.flush()
 
     def reset(self):
         """重置进度条进度"""
@@ -84,15 +85,15 @@ class ProgressBar:
         # 打印进度条头
         sys.stdout.write(head + ',  {0:3}/{1}: '.format(self.current, self.total))
         # 打印进度条
-        sys.stdout.write('[' + '='*progress + '>' + ' '*(self.width - progress - 1) + '] time: %.2fs' % remaining_time)
+        sys.stdout.write('[' + '='*progress + '>' + ' '*(self.width - progress - 1) + '] remaining time: %.2fs' % remaining_time)
         # 打印尾随信息
         sys.stdout.write(message)
         sys.stdout.flush()
 
         # 如果进度完成，则输出换行符（永久打印在控制台上）
-        if self.current == self.total:
-            sys.stdout.write('\n')
-            sys.stdout.flush()
+        # if self.current == self.total:
+        #     sys.stdout.write('\n')
+        #     sys.stdout.flush()
 
 
 
