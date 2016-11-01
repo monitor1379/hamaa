@@ -5,7 +5,7 @@
 @site: www.monitor1379.com
 
 @version: 1.0
-@license: Apache Licence
+@license: GNU General Public License(Version 3)
 @file: mnist_decoder.py
 @time: 2016/8/16 20:03
 
@@ -46,8 +46,9 @@ The sizes in each dimension are 4-byte integers (MSB first, high endian, like in
 The data is stored like in a C array, i.e. the index in the last dimension changes the fastest.
 """
 
-import struct
 import os
+import struct
+
 import numpy as np
 
 # 当前路径

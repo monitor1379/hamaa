@@ -5,15 +5,12 @@
 @site: www.monitor1379.com
 
 @version: 1.0
-@license: Apache Licence
+@license: GNU General Public License(Version 3)
 @file: check_gradient.py
 @time: 2016/10/4 9:59
 
 
 """
-
-
-import numpy as np
 
 from hamaa.gates import *
 from hamaa.layers import *

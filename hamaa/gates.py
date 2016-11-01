@@ -5,15 +5,12 @@
 @site: www.monitor1379.com
 
 @version: 1.0
-@license: Apache Licence
+@license: GNU General Public License(Version 3)
 @file: gates.py
 @time: 2016/9/11 9:01
 
 计算单元
 """
-
-
-from .utils import np_utils
 
 import numpy as np
 
@@ -118,3 +115,5 @@ class SoftmaxGate:
         raise Exception('Error: SoftmaxGate::backward() is not implemented yet!')
 
 
+if __name__ == '__main__':
+    pass

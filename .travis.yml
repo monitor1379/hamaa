@@ -5,12 +5,12 @@ python:
 script:
   # 安装依赖
   - pip install -r requirements.txt
+  # 编译Python C扩展
+  - python setup.py build_ext
   # 安装Hamaa
   - pip install .
-  # 测试，-v表示输出测试详情
+  # 跑测试并检测代码覆盖率
   - nosetests -v
 
-
 after_success:
-  # codecov
   - bash <(curl -s https://codecov.io/bash)

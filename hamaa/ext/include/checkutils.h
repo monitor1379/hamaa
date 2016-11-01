@@ -1,5 +1,5 @@
-#include "D:/Anaconda2/include/Python.h"
-#include "D:/Anaconda2/Lib/site-packages/numpy/core/include/numpy/arrayobject.h"
+#include "Python.h"
+#include "numpy/arrayobject.h"
 
 #define SUCCESS 1
 #define FAIL 0

@@ -5,16 +5,18 @@
 @site: www.monitor1379.com
 
 @version: 1.0
-@license: Apache Licence
-@file: losses.py
+@license: GNU General Public License(Version 3)
+@file: objectives.py
 @time: 2016/9/11 12:07
 
 损失函数
 """
 
 import numpy as np
-from .utils import np_utils
+
 from .gates import SoftmaxGate
+from .utils import np_utils
+
 
 class MeanSquareError:
 
