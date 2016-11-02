@@ -14,16 +14,17 @@
 权重进行可视化。
 """
 
-from hamaa.datasets import datasets
+from hamaa.datasets.datasets import load_mnist_data
 from hamaa.layers import Dense, Activation, Convolution2D, Flatten, MeanPooling2D
 from hamaa.models import Sequential
 from hamaa.optimizers import SGD
-from hamaa.utils import np_utils, vis_utils
+from hamaa.utils import vis_utils
+from hamaa.utils.np_utils import split_training_data
 
 
 def run():
-    training_data, test_data = datasets.load_mnist_data(nb_training=3500, nb_test=10000, preprocess=True, flatten=False)
-    training_data, validation_data = np_utils.split_training_data(training_data, nb_validation=500)
+    training_data, test_data = load_mnist_data(nb_training=3500, nb_test=10000, preprocess=True, flatten=False)
+    training_data, validation_data = split_training_data(training_data, nb_validation=500)
 
     print 'training_data:', training_data[0].shape
     print 'validation_data:', validation_data[0].shape
@@ -47,7 +48,7 @@ def run():
 
     model.train(training_data=training_data,
                 nb_epochs=20,
-                mini_batch_size=10,
+                mini_batch_size=50,
                 verbose=2,
                 validation_data=validation_data,
                 log_epoch=1

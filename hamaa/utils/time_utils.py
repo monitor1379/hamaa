@@ -64,7 +64,7 @@ class ProgressBar:
     def clear(self):
         """清空进度条"""
         sys.stdout.write('\r')
-        sys.stdout.write(' ' * (self.width + 50))
+        sys.stdout.write(' ' * (100))
         sys.stdout.write('\r')
         sys.stdout.flush()
 

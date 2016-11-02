@@ -13,18 +13,18 @@
 使用进度条功能来显示过程。
 """
 
-from hamaa.datasets import datasets
+from hamaa.datasets.datasets import load_mnist_data
 from hamaa.layers import Dense, Activation
 from hamaa.models import Sequential
 from hamaa.optimizers import SGD
-from hamaa.utils import np_utils
+from hamaa.utils.np_utils import split_training_data
 
 
 def run():
     # 加载MNIST数据集，preprocess表示是否进行归一化预处理，flatten表示是否将二维图像平铺成一维
     print '正在加载MNIST数据集...'
-    training_data, test_data = datasets.load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=True)
-    training_data, validation_data = np_utils.split_training_data(training_data, split_ratio=0.95)
+    training_data, test_data = load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=True)
+    training_data, validation_data = split_training_data(training_data, split_ratio=0.95)
 
     print 'training_data:', training_data[0].shape
     print 'validation_data:', validation_data[0].shape

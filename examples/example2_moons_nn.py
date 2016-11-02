@@ -32,17 +32,17 @@ def run():
     print model.summary()
 
     # 加载moons数据
-    x, y = datasets.load_moons_data(nb_data=1000, noise=0.1)
+    x, y = datasets.load_moons_data(nb_data=2000, noise=0.1)
     # 切分数据集中的10%作为验证集
     training_data, validation_data = np_utils.split_training_data(data=(x, y), split_ratio=0.9)
 
     model.train(training_data=training_data,        # 设置训练集
-                nb_epochs=100,                      # 设置训练周期
-                mini_batch_size=10,                 # 设置每次mini_batch的数据量
+                nb_epochs=10,                       # 设置训练周期
+                mini_batch_size=100,                # 设置每次mini_batch的数据量
                 verbose=1,                          # 设置训练过程显示方式，0代表不输出，1代表简单输出，2代表使用进图条功能
                 validation_data=validation_data,    # 设置验证集
-                log_epoch=10)                       # 设置每隔多少个周期才在控制台上显示一次训练过程的详细信息
-    print '分类准确率: ', model.evaluate_accuracy(x, y)
+                log_epoch=1)                        # 设置每隔多少个周期才在控制台上显示一次训练过程的详细信息
+    print 'test accuracy: ', model.evaluate_accuracy(x, y)
 
     model.plot_prediction(data=training_data)       # 对训练集进行分类的结果可视化
     model.plot_prediction(data=validation_data)     # 对验证集进行分类的结果可视化
