@@ -146,7 +146,7 @@ class SequentialTrainer(object):
         training_acc, training_loss = model.evaluate_accuracy_and_loss(training_x,
                                                                        training_y,
                                                                        evaluate_batch_size)
-        text = 'epoch: {:2},  train_acc: {:7.3f}%,  train_loss: {:.4f}'.format(epoch,
+        text = 'epoch: {:3},  train_acc: {:7.3f}%,  train_loss: {:.4f}'.format(epoch,
                                                                                    training_acc * 100,
                                                                                    training_loss)
         self.logger['training_acc'].append(training_acc)

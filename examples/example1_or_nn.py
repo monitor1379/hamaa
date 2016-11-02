@@ -28,7 +28,7 @@ def run():
     print model.summary()                                       # 打印模型的详细信息
     x, y = datasets.load_or_data()                              # 加载数据
     model.train(training_data=(x, y), nb_epochs=10)             # 开始训练，设置训练周期为10
-    print '分类准确率: ', model.evaluate_accuracy(x, y)          # 评估模型的准确率
+    print 'test accuracy: ', model.evaluate_accuracy(x, y)      # 评估模型的准确率
 
 
 if __name__ == '__main__':
