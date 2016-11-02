@@ -1,3 +1,0 @@
-LIBRARY im2colutils.pyd
-EXPORTS
-initim2colutils

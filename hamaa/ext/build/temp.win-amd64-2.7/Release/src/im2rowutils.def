@@ -1,3 +1,0 @@
-LIBRARY im2rowutils.pyd
-EXPORTS
-initim2rowutils
