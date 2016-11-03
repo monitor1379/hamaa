@@ -57,6 +57,8 @@ Hamaa尽管在速度优化上没有工业级别的深度学习框架要好，
 - Hamaa已支持的所有特性 : [DEVELOP.md](DEVELOP.md)
 - Hamaa的未来计划：[TODO.md](TODO.md)
 
+因本人水平有限，如有错误与不足之处诚请指出 :D (可在issues中提出)
+
 --- 
 
 ### Installation
@@ -84,7 +86,7 @@ Pillow>=3.4
 ```
 
 
-目前Hamaa仅支持：Python 2.7.
+**注**: 目前Hamaa仅支持：Python 2.x，后续将支持Python 3.x版本。
 
 --- 
 
