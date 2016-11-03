@@ -2,10 +2,11 @@
 	<img width=300 src="https://rawgit.com/monitor1379/hamaa/dev/docs/images/hamaa-logo.svg" />
 </p>
 
-## Hamaa：a Simple and Naive Deep Learning library 
+## Hamaa: a Simple and Naive Deep Learning library 
 
 [![Documentation Status](https://readthedocs.org/projects/hamaa/badge/?version=latest)](http://hamaa.readthedocs.io/zh_CN/latest/?badge=latest) 
 [![Build Status](https://travis-ci.org/monitor1379/hamaa.svg?branch=master)](https://travis-ci.org/monitor1379/hamaa)
+[![GitHub license](https://img.shields.io/badge/license-AGPL-blue.svg)](https://raw.githubusercontent.com/monitor1379/hamaa/master/LICENSE)
 [![codecov](https://codecov.io/gh/monitor1379/hamaa/branch/master/graph/badge.svg)](https://codecov.io/gh/monitor1379/hamaa)
 
 ### What is Hamaa
@@ -51,26 +52,37 @@ Hamaa尽管在速度优化上没有工业级别的深度学习框架要好，
 
 更多链接：
 
-- Hamaa使用文档：[hamaa.readthedocs.io](http://hamaa.readthedocs.io)。
-- Hamaa项目日志与更多特性：[developing.md](developing.html)
-- Hamaa设计文档：[完善中](FIXME)
+- Hamaa使用文档 : [hamaa.readthedocs.io](http://hamaa.readthedocs.io)。
+- Hamaa设计文档 : [完善中](FIXME)
+- Hamaa已支持的所有特性 : [DEVELOP.md](DEVELOP.md)
+- Hamaa的未来计划：[TODO.md](TODO.md)
 
 --- 
 
-### Install
+### Installation
+
+Hamaa使用了下述4个依赖库: 
+
+```
+numpy>=1.9
+matplotlib>=1.5
+nose>=1.3
+Pillow>=3.4
+```
 
 打开`shell`或者`cmd`，输入下述命令
 
 ```
-
 # 下载源代码到本地
 >> git clone git@github.com:monitor1379/hamaa.git
 
-# 输入下述命令进行编译安装
+# 输入下述命令，依次进行安装依赖、编译Hamaa中的Python C扩展、安装Hamaa
 >> cd hamaa
+>> pip install -r requirements.txt
 >> python setup.py build_ext
 >> pip install .
 ```
+
 
 目前Hamaa仅支持：Python 2.7.
 
@@ -114,7 +126,7 @@ print model.summary()
 
 ![print_model_summary](docs/images/README/print_model_summary.png)
 
-- 加载数据集（此处采用半月形数据集）,并切分其中0.9作为训练集，剩下0.1作为验证集
+- 加载数据集（此处采用moons数据集，为两个半弧形组成）,并切分其中0.9作为训练集，剩下0.1作为验证集
 ```python
 from hamaa.datasets import datasets
 from hamaa.utils.np_utils import split_training_data
@@ -133,6 +145,9 @@ model.train(training_data=training_data,
 
 训练信息如下图所示:
 ![train](docs/images/README/train.png)
+
+如果每个epoch耗时比较长，还可以使用进度条功能:
+![train_gif](docs/images/README/train.gif)
 
 - 训练完之后评估模型的准确率:
 ```python
@@ -191,6 +206,8 @@ model.train(training_data=(x, y), nb_epochs=10)             # 开始训练，设
 print 'test accuracy: ', model.evaluate_accuracy(x, y)		# 评估模型的准确率
 ``` 
 
+---
+
 #### examples/example2_moons_nn.py
 
 构建一个神经元数目为 [2->3->2] 的多层神经网络来对线性不可分数据集进行分类。
@@ -232,6 +249,8 @@ model.plot_prediction(data=validation_data)     # 对验证集进行分类的结
 model.plot_training_iteration()                 # 画出训练过程中准确率和损失函数值随着训练周期的变化图
 
 ```
+
+---
 
 #### examples/example3_mnist_nn.py
 
@@ -279,6 +298,7 @@ print 'test accuracy:', model.evaluate_accuracy(test_data[0], test_data[1])
 model.plot_training_iteration()
 ```
 
+---
 
 #### examples/examples4_mnist_cnn.py
 
@@ -337,10 +357,13 @@ model.plot_training_iteration()
 
 ```
 
+在MNIST数据集上测试准确率达到99.3%的卷积神经网络卷积核可视化示意图：
+(**注**: 非来自上述程序)
 
-# License
+<p align="center">
+      <img width=200 src="docs/images/README/cnn_first_layer_weight.png" alt="kernel" />
+</p>
 
-[![GitHub license](https://img.shields.io/badge/license-AGPL-blue.svg)](https://raw.githubusercontent.com/monitor1379/hamaa/master/LICENSE)
 
 ### dev branch
 

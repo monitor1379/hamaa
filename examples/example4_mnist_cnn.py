@@ -23,6 +23,7 @@ from hamaa.utils.np_utils import split_training_data
 
 
 def run():
+    print 'loading MNIST dataset...'
     training_data, test_data = load_mnist_data(nb_training=3500, nb_test=10000, preprocess=True, flatten=False)
     training_data, validation_data = split_training_data(training_data, nb_validation=500)
 

@@ -122,7 +122,7 @@ class SequentialTrainer(object):
                 # 更新当前进度
                 bar.move(batch_training_x.shape[0])
                 # 显示进度条。设立了显示间隔以避免刷新频繁
-                if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 100, 1)) == 0):
+                if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 20, 1)) == 0):
                     bar.show(head='epoch: %2d/%d' % (epoch, nb_epochs))
 
             bar.clear()
@@ -146,7 +146,7 @@ class SequentialTrainer(object):
         training_acc, training_loss = model.evaluate_accuracy_and_loss(training_x,
                                                                        training_y,
                                                                        evaluate_batch_size)
-        text = 'epoch: {:3},  train_acc: {:7.3f}%,  train_loss: {:.4f}'.format(epoch,
+        text = 'epoch: {:3},  train_acc:{:7.3f}%,  train_loss:{:.4f}'.format(epoch,
                                                                                    training_acc * 100,
                                                                                    training_loss)
         self.logger['training_acc'].append(training_acc)
@@ -158,7 +158,7 @@ class SequentialTrainer(object):
             validation_acc, validation_loss = model.evaluate_accuracy_and_loss(validation_x,
                                                                                validation_y,
                                                                                evaluate_batch_size)
-            text += ',  valid_acc: {:7.3f}%,  valid_loss: {:.4f}'.format(validation_acc * 100,
+            text += ',  valid_acc:{:7.3f}%,  valid_loss:{:.4f}'.format(validation_acc * 100,
                                                                                  validation_loss)
             self.logger['validation_acc'].append(validation_acc)
             self.logger['validation_loss'].append(validation_loss)
@@ -167,8 +167,8 @@ class SequentialTrainer(object):
         self.logger['end_time'] = time.time()
         self.logger['need_to_refresh_start_time'] = True
         delta_time = self.logger['end_time'] - self.logger['start_time']
-        text += ',  time:%.3fs' % delta_time
-        text += ',  lr:%f' % model.optimizer.cur_lr
+        text += ',  time: %.3fs' % delta_time
+        text += ',  lr: %f' % model.optimizer.cur_lr
 
         # 清空输出内容
         sys.stdout.write('\r')

@@ -1,9 +1,11 @@
-# 2016年11月02日
+# DEVELOP : All Features
+
+#### 2016年10月20日
 
 Hamaa已支持特性：
 
 - models:
-	- Sequetial()
+	- Sequetial
 - layers:
 	- Dense
 	- Activation

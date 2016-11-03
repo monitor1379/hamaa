@@ -22,7 +22,7 @@ from hamaa.utils.np_utils import split_training_data
 
 def run():
     # 加载MNIST数据集，preprocess表示是否进行归一化预处理，flatten表示是否将二维图像平铺成一维
-    print '正在加载MNIST数据集...'
+    print 'loading MNIST dataset...'
     training_data, test_data = load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=True)
     training_data, validation_data = split_training_data(training_data, split_ratio=0.95)
 
