@@ -57,6 +57,8 @@ Hamaa尽管在速度优化上没有工业级别的深度学习框架要好，
 - Hamaa已支持的所有特性 : [DEVELOP.md](DEVELOP.md)
 - Hamaa的未来计划：[TODO.md](TODO.md)
 
+因本人水平有限，如有错误与不足之处诚请指出 :D (可在issues中提出)
+
 --- 
 
 ### Installation
