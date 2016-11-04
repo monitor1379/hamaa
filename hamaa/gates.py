@@ -107,12 +107,21 @@ class SoftmaxGate:
 
     @staticmethod
     def forward(x):
-        z = np.exp(x)
-        return z / np.sum(z, axis=1, keepdims=True)
+        ex = np.exp(x)
+        # ex = np.exp(x - np.max(x, axis=1, keepdims=True))
+        return ex / np.sum(ex, axis=1, keepdims=True)
 
     @staticmethod
     def backward(x, z, d_z):
-        raise Exception('Error: SoftmaxGate::backward() is not implemented yet!')
+        import warnings
+        warnings.warn('Do not use SoftmaxGate.backward() when backpropagation!')
+        n, m = x.shape
+        d_x = np.empty_like(x)
+        eyemat = np.eye(m)
+        for i in xrange(n):
+            z_i = z[i].reshape(1, m)
+            d_x[i] = np.dot(d_z[i], (eyemat - z_i) * z_i.T)
+        return d_x
 
 
 if __name__ == '__main__':

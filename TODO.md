@@ -2,6 +2,7 @@
 
 #### 2016年11月01日增加
 
+- 增加模型存储/读取的功能
 - 支持Python 3.x版本
 - For User: 完善Hamaa使用文档 : hamaa.readthedocs.io
 - For Learner: 完善代码注释
