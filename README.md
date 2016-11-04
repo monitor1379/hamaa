@@ -86,7 +86,7 @@ Pillow>=3.4
 ```
 
 
-目前Hamaa仅支持：Python 2.7.
+**注**: 目前Hamaa仅支持：Python 2.x，后续将支持Python 3.x版本。
 
 --- 
 
