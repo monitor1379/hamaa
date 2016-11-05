@@ -9,8 +9,9 @@
 @file: example1_or_nn.py
 @time: 2016/10/11 0:07
 
-使用Hama构建单层神经网络来解决或问题的一个简洁的例子。
-其中包含了创建、训练、测试一个神经网络必备的所有函数。
+Use Hamaa to build a mlp to solve the "or problem".
+This case includes all the necessary functions
+for creating, training and testing a neural network.
 """
 
 from hamaa.datasets import datasets
@@ -20,15 +21,34 @@ from hamaa.optimizers import SGD
 
 
 def run():
-    model = Sequential()                                        # 创建一个神经网络模型
-    model.add(Dense(input_dim=2, output_dim=2, init='uniform')) # 添加一个输入神经元数是2、输出神经元数是2的全连接层
-    model.add(Activation('sigmoid'))                            # 添加一个激活函数为sigmoid的激活层
-    model.set_objective('mse')                                  # 设置目标函数/损失函数为均方差
-    model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))  # 设置优化器为随机梯度下降法
-    print model.summary()                                       # 打印模型的详细信息
-    x, y = datasets.load_or_data()                              # 加载数据
-    model.train(training_data=(x, y), nb_epochs=10)             # 开始训练，设置训练周期为10
-    print 'test accuracy: ', model.evaluate_accuracy(x, y)      # 评估模型的准确率
+    # 1. create a model
+    model = Sequential()
+
+    # 2. add a full connected layer to model
+    model.add(Dense(input_dim=2, output_dim=2, init='uniform'))
+
+    # 3. add a activation layer to model
+    model.add(Activation('sigmoid'))
+
+    # 4. use "mean square error" as the objective of model
+    model.set_objective('mse')
+
+    # 5. use "stochastic gradient descent" as the optimizerof model
+    model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))
+
+    # 6. print the summary of model
+    print model.summary()
+
+    # 7. load "or" data, note that the label "y" is one hot
+    #    x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    #    y = np.array([[1, 0], [0, 1], [0, 1], [0, 1]])
+    x, y = datasets.load_or_data()
+
+    # 8. train the neural network
+    model.train(training_data=(x, y), nb_epochs=10)
+
+    # 9. evaluate the accuracy on data
+    print 'test accuracy: ', model.evaluate_accuracy(x, y)
 
 
 if __name__ == '__main__':

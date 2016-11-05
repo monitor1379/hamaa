@@ -122,7 +122,7 @@ class SequentialTrainer(object):
                 # 更新当前进度
                 bar.move(batch_training_x.shape[0])
                 # 显示进度条。设立了显示间隔以避免刷新频繁
-                if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 20, 1)) == 0):
+                if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 100, 1)) == 0):
                     bar.show(head='epoch: %2d/%d' % (epoch, nb_epochs))
 
             bar.clear()

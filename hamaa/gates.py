@@ -107,12 +107,18 @@ class SoftmaxGate:
 
     @staticmethod
     def forward(x):
-        ex = np.exp(x)
-        # ex = np.exp(x - np.max(x, axis=1, keepdims=True))
+        ex = np.exp(x - np.max(x, axis=1, keepdims=True))
         return ex / np.sum(ex, axis=1, keepdims=True)
 
     @staticmethod
     def backward(x, z, d_z):
+        # Because softmax is usually used together with crossentropy cost function,
+        # so the backpropagation part of softmax is calculated in the BP of crossentropy.
+        # Here just pass through the derivatives.
+        return np.array(d_z)
+
+    @staticmethod
+    def naive_backward(x, z, d_z):
         import warnings
         warnings.warn('Do not use SoftmaxGate.backward() when backpropagation!')
         n, m = x.shape

@@ -188,24 +188,47 @@ model.plot_prediction(data=training_data)
 其中包含了创建、训练、测试一个神经网络必备的所有函数。
 
 ```python
+
 from hamaa.datasets import datasets
 from hamaa.layers import Dense, Activation
 from hamaa.models import Sequential
 from hamaa.optimizers import SGD
 
 
-model = Sequential()                                        # 创建一个神经网络模型
-model.add(Dense(input_dim=2, output_dim=2, init='uniform')) # 添加一个输入神经元数是2、输出神经元数是2的全连接层
-model.add(Activation('sigmoid'))                            # 添加一个激活函数为sigmoid的激活层
-model.set_objective('mse')                                  # 设置目标函数/损失函数为均方差
-model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))  # 设置优化器为随机梯度下降法
+def run():
+    # 1. create a model
+    model = Sequential()
 
-print model.summary()                                       # 打印模型的详细信息
+    # 2. add a full connected layer to model
+    model.add(Dense(input_dim=2, output_dim=2, init='uniform'))
 
-x, y = datasets.load_or_data()                              # 加载数据
-model.train(training_data=(x, y), nb_epochs=10)             # 开始训练，设置训练周期为10
+    # 3. add a activation layer to model
+    model.add(Activation('sigmoid'))
 
-print 'test accuracy: ', model.evaluate_accuracy(x, y)		# 评估模型的准确率
+    # 4. use "mean square error" as the objective of model
+    model.set_objective('mse')
+
+    # 5. use "stochastic gradient descent" as the optimizerof model
+    model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))
+
+    # 6. print the summary of model
+    print model.summary()
+
+    # 7. load "or" data, note that the label "y" is one hot
+    #    x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    #    y = np.array([[1, 0], [0, 1], [0, 1], [0, 1]])
+    x, y = datasets.load_or_data()
+
+    # 8. train the neural network
+    model.train(training_data=(x, y), nb_epochs=10)
+
+    # 9. evaluate the accuracy on data
+    print 'test accuracy: ', model.evaluate_accuracy(x, y)
+
+
+if __name__ == '__main__':
+    run()
+
 ``` 
 
 ---
@@ -216,39 +239,51 @@ print 'test accuracy: ', model.evaluate_accuracy(x, y)		# 评估模型的准确�
 
 ```python
 
+from hamaa.datasets import datasets
 from hamaa.layers import Dense, Activation
 from hamaa.models import Sequential
-from hamaa.datasets import datasets
-from hamaa.utils import np_utils
 from hamaa.optimizers import SGD
+from hamaa.utils.np_utils import split_training_data
 
-# 构建一个神经元数目为[2->3->2] 的多层神经网络来对moons数据进行分类
-model = Sequential()
-model.add(Dense(input_dim=2, output_dim=3, init='normal'))
-model.add(Activation('sigmoid'))
-model.add(Dense(output_dim=2))
-model.add(Activation('sigmoid'))
-model.set_objective('categorical_crossentropy')
-model.set_optimizer(SGD(lr=0.9, momentum=0.5))
 
-print model.summary()
+def run():
+    model = Sequential()
+    model.add(Dense(input_dim=2, output_dim=4, init='normal'))
+    model.add(Activation('sigmoid'))
+    model.add(Dense(output_dim=2))
+    model.add(Activation('softmax'))
+    model.set_objective('categorical_crossentropy')
+    model.set_optimizer(SGD(lr=0.03, momentum=0.5))
 
-# 加载moons数据
-x, y = datasets.load_moons_data(nb_data=2000, noise=0.1)
-# 切分数据集中的10%作为验证集
-training_data, validation_data = np_utils.split_training_data(data=(x, y), split_ratio=0.9)
+    print model.summary()
 
-model.train(training_data=training_data,        # 设置训练集
-            nb_epochs=10,                       # 设置训练周期
-            mini_batch_size=100,                # 设置每次mini_batch的数据量
-            verbose=1,                          # 设置训练过程显示方式，0代表不输出，1代表简单输出，2代表使用进图条功能
-            validation_data=validation_data,    # 设置验证集
-            log_epoch=1)                        # 设置每隔多少个周期才在控制台上显示一次训练过程的详细信息
-print 'test accuracy: ', model.evaluate_accuracy(x, y)
+    x, y = datasets.load_moons_data(nb_data=2000, noise=0.1)
 
-model.plot_prediction(data=training_data)       # 对训练集进行分类的结果可视化
-model.plot_prediction(data=validation_data)     # 对验证集进行分类的结果可视化
-model.plot_training_iteration()                 # 画出训练过程中准确率和损失函数值随着训练周期的变化图
+    # split nine in tenth of original data as training data, and the rest as validation data
+    training_data, validation_data = split_training_data(data=(x, y), split_ratio=0.9)
+
+    # "verbose" means display mode of training information
+    # "log_epoch" means display training information every log_epoch times
+    model.train(training_data=training_data,
+                nb_epochs=40,
+                mini_batch_size=100,
+                verbose=1,
+                validation_data=validation_data,
+                log_epoch=1)
+
+    print 'test accuracy: ', model.evaluate_accuracy(x, y)
+
+    # plot the prediction on training_data and validation_data
+    model.plot_prediction(data=training_data)
+    model.plot_prediction(data=validation_data)
+
+    # plot a line chart about accuracy and loss with epoch.
+    model.plot_training_iteration()
+
+
+if __name__ == '__main__':
+    run()
+
 
 ```
 
@@ -268,41 +303,45 @@ from hamaa.optimizers import SGD
 from hamaa.utils.np_utils import split_training_data
 
 
-# 加载MNIST数据集，preprocess表示是否进行归一化预处理，flatten表示是否将二维图像平铺成一维
-print '正在加载MNIST数据集...'
-training_data, test_data = load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=True)
-training_data, validation_data = split_training_data(training_data, split_ratio=0.95)
+def run():
+    print 'loading MNIST dataset...'
+    # "preprocess" means normalization
+    training_data, test_data = load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=True)
+    training_data, validation_data = split_training_data(training_data, split_ratio=0.95)
 
-print 'training_data:', training_data[0].shape
-print 'validation_data:', validation_data[0].shape
-print 'test_data:', test_data[0].shape
+    print 'training_data:', training_data[0].shape
+    print 'validation_data:', validation_data[0].shape
+    print 'test_data:', test_data[0].shape
 
-# 构建一个每层神经元数为 [784->100->10] 的神经网络
-model = Sequential()
-model.add(Dense(input_dim=784, output_dim=100, init='glorot_normal'))
-model.add(Activation('sigmoid'))
-model.add(Dense(output_dim=10, init='glorot_normal'))
-model.add(Activation('sigmoid'))
-model.set_objective('categorical_crossentropy')
-model.set_optimizer(SGD(lr=0.2, momentum=0.2, decay=1e-3))
+    model = Sequential()
+    model.add(Dense(input_dim=784, output_dim=100, init='glorot_normal'))
+    model.add(Activation('sigmoid'))
+    model.add(Dense(output_dim=10, init='glorot_normal'))
+    model.add(Activation('softmax'))
+    model.set_objective('categorical_crossentropy')
+    model.set_optimizer(SGD(lr=0.01, momentum=0.1))
 
-print model.summary()
+    print model.summary()
 
-model.train(training_data=training_data,
-            nb_epochs=10,
-            mini_batch_size=100,
-            verbose=2,  # 使用进图条功能
-            validation_data=validation_data,
-            log_epoch=1
-            )
+    model.train(training_data=training_data,
+                nb_epochs=10,
+                mini_batch_size=100,
+                verbose=2,
+                validation_data=validation_data,
+                log_epoch=1)
 
-print 'test accuracy:', model.evaluate_accuracy(test_data[0], test_data[1])
-model.plot_training_iteration()
+    print 'test accuracy:', model.evaluate_accuracy(test_data[0], test_data[1])
+    model.plot_training_iteration()
+
+
+if __name__ == '__main__':
+    run()
+
 ```
 
 ---
 
-#### examples/examples4_mnist_cnn.py
+#### examples/example4_mnist_cnn.py
 
 构建一个卷积神经网络来对MNIST数据集进行分类。
 使用进度条功能来显示过程，并使用可视化工具对卷积层
@@ -318,44 +357,46 @@ from hamaa.utils import vis_utils
 from hamaa.utils.np_utils import split_training_data
 
 
-training_data, test_data = load_mnist_data(nb_training=3500, nb_test=10000, preprocess=True, flatten=False)
-training_data, validation_data = split_training_data(training_data, nb_validation=500)
+print 'loading MNIST dataset...'
+training_data, test_data = load_mnist_data(nb_training=3000, nb_test=10000, preprocess=True, flatten=False)
+training_data, validation_data = split_training_data(training_data, nb_validation=1000)
 
 print 'training_data:', training_data[0].shape
 print 'validation_data:', validation_data[0].shape
 print 'test_data:', test_data[0].shape
 
 model = Sequential()
-model.add(Convolution2D(nb_kernel=6, kernel_height=5, kernel_width=5, activation='tanh', input_shape=(1, 28, 28)))
+model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='tanh', input_shape=(1, 28, 28)))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
-model.add(Convolution2D(nb_kernel=10, kernel_height=5, kernel_width=5, activation='tanh'))
+model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='tanh'))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(output_dim=30, init='glorot_normal'))
 model.add(Activation('sigmoid'))
 model.add(Dense(output_dim=10, init='glorot_normal'))
-model.add(Activation('sigmoid'))
+model.add(Activation('softmax'))
 
 model.set_objective('categorical_crossentropy')
-model.set_optimizer(SGD(lr=0.09, momentum=0.3, decay=1e-6))
+model.set_optimizer(SGD(lr=0.03, momentum=0.1))
 
 print model.summary()
 
 model.train(training_data=training_data,
-            nb_epochs=20,
+            nb_epochs=30,
             mini_batch_size=50,
             verbose=2,
             validation_data=validation_data,
-            log_epoch=1
-            )
+            log_epoch=1)
 
 print model.evaluate_accuracy(test_data[0], test_data[1])
 
-# 使用可视化工具对卷积层的权重进行可视化
-vis_utils.visualize_convolution_weight(model.layers[0], title='layer 0')
-vis_utils.visualize_convolution_weight(model.layers[2], title='layer 2')
+# visualize the kernels of convolution layer
+vis_utils.visualize_convolution_kernel(model.layers[0], title='layer 0')
+vis_utils.visualize_convolution_kernel(model.layers[2], title='layer 2')
 
 model.plot_training_iteration()
+
+
 
 ```
 

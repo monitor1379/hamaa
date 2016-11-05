@@ -34,7 +34,7 @@ class CategoricalCrossEntropy:
 
     @staticmethod
     def loss(y_real, y_pred):
-        probs = SoftmaxGate.forward(y_pred)
+        probs = y_pred
         categorical_y_real = np_utils.to_categorical(y_real)
         n = categorical_y_real.shape[0]
         cost = np.sum(-np.log(probs[range(n), categorical_y_real])) / n
@@ -42,7 +42,7 @@ class CategoricalCrossEntropy:
 
     @staticmethod
     def diff(y_real, y_pred):
-        probs = SoftmaxGate.forward(y_pred)
+        probs = y_pred
         categorical_y_real = np_utils.to_categorical(y_real)
         n = categorical_y_real.shape[0]
         probs[range(n), categorical_y_real] -= 1

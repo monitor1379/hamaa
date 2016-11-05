@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def visualize_convolution_weight(conv_layer, title='convolution layer visualizing'):
+def visualize_convolution_kernel(conv_layer, title='convolution layer visualizing'):
     plt.figure(title)
     N, _, _, _ = conv_layer.w.shape
     row = int(np.ceil(np.sqrt(N)))
