@@ -63,6 +63,10 @@ Hamaa尽管在速度优化上没有工业级别的深度学习框架要好，
 
 ### Installation
 
+支持:
+- Windows、Linux
+- Python 2.x (后续将支持Python 3.x版本)
+
 Hamaa使用了下述4个依赖库: 
 
 ```
@@ -86,7 +90,6 @@ Pillow>=3.4
 ```
 
 
-**注**: 目前Hamaa仅支持：Python 2.x，后续将支持Python 3.x版本。
 
 --- 
 
@@ -107,10 +110,10 @@ model = Sequential()
 ```python
 from hamaa.layers import Dense, Activation
 
-model.add(Dense(input_dim=2, output_dim=3))
+model.add(Dense(input_dim=2, output_dim=4))
 model.add(Activation('sigmoid'))
 model.add(Dense(output_dim=2))
-model.add(Activation('sigmoid'))
+model.add(Activation('softmax'))
 ```
 
 - 设置模型的目标(损失)函数以及优化器:
@@ -118,7 +121,7 @@ model.add(Activation('sigmoid'))
 from hamaa.optimizers import SGD
 
 model.set_objective('categorical_crossentropy')
-model.set_optimizer(SGD(lr=0.9, momentum=0.5))
+model.set_optimizer(SGD(lr=0.03, momentum=0.5))
 ```
 
 - 打印模型的详细信息:
@@ -140,9 +143,11 @@ training_data, validation_data = split_training_data(data=(x, y), split_ratio=0.
 - 接下来就可以开始训练模型:
 ```python
 model.train(training_data=training_data,
-			nb_epochs=10,
-			mini_batch_size=100,
-			validation_data=validation_data)
+            nb_epochs=40,
+            mini_batch_size=100,
+            verbose=1,
+            validation_data=validation_data,
+            log_epoch=1)
 ```
 
 训练信息如下图所示:
@@ -414,3 +419,12 @@ model.plot_training_iteration()
 [![Build Status](https://travis-ci.org/monitor1379/hamaa.svg?branch=dev)](https://travis-ci.org/monitor1379/hamaa)
 [![codecov](https://codecov.io/gh/monitor1379/hamaa/branch/dev/graph/badge.svg)](https://codecov.io/gh/monitor1379/hamaa)
 
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?2b568b07f96780d51b81cba1f832e8aa";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>

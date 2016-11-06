@@ -1,2 +1,1 @@
-recursive-include hamaa\ext *
-recursive-include hamaa\datasets *
+recursive-include hamaa *
