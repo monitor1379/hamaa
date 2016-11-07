@@ -12,13 +12,14 @@
 
 """
 
-from .gates import SigmoidGate, TanhGate, ReLUGate, LinearGate
+from .gates import SigmoidGate, TanhGate, ReLUGate, LinearGate, SoftmaxGate
 
 
 _dict = {'sigmoid': SigmoidGate,
          'tanh': TanhGate,
          'relu': ReLUGate,
          'linear': LinearGate,
+         'softmax': SoftmaxGate,
          }
 
 

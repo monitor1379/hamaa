@@ -122,7 +122,7 @@ class SequentialTrainer(object):
                 # 更新当前进度
                 bar.move(batch_training_x.shape[0])
                 # 显示进度条。设立了显示间隔以避免刷新频繁
-                if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 20, 1)) == 0):
+                if verbose == 2 and (i + 1 == batch_times or i % (max(batch_times / 100, 1)) == 0):
                     bar.show(head='epoch: %2d/%d' % (epoch, nb_epochs))
 
             bar.clear()
@@ -196,8 +196,10 @@ class SequentialTrainer(object):
         plt.xlabel('epoch')
         plt.ylabel('accuracy')
         plt.plot(epoch, training_acc, label='train')
+        plt.scatter(epoch, training_acc, marker='*')
         if validation_acc:
             plt.plot(epoch, validation_acc, label='validation')
+            plt.scatter(epoch, validation_acc, marker='*')
         plt.legend(loc=0)
 
         # 绘画准确率随着训练周期的折线图的放大版本
@@ -214,8 +216,10 @@ class SequentialTrainer(object):
         plt.ylabel('accuracy')
         plt.plot(epoch, np.ones_like(epoch), 'k--')
         plt.plot(epoch, training_acc, label='train')
+        plt.scatter(epoch, training_acc, marker='*')
         if validation_acc:
             plt.plot(epoch, validation_acc, label='validation')
+            plt.scatter(epoch, validation_acc, marker='*')
         plt.legend(loc=0)
 
         # 绘画损失函数值随着训练周期的折线图
@@ -229,8 +233,10 @@ class SequentialTrainer(object):
         plt.xlabel('epoch')
         plt.ylabel('loss')
         plt.plot(epoch, training_loss, label='training')
+        plt.scatter(epoch, training_loss, marker='*')
         if validation_loss:
             plt.plot(epoch, validation_loss, label='validation')
+            plt.scatter(epoch, validation_loss, marker='*')
         plt.legend(loc=0)
 
         plt.show()

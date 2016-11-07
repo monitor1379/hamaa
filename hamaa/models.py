@@ -288,6 +288,17 @@ class Sequential(object):
         loss /= n
         return acc, loss
 
+
+    def _check_(self):
+        """check the model before training."""
+        if self.layers[-1].layer_type == 'softmax' and self.objective != 'categorical_crossentropy':
+            raise Exception('Error objective function: when using softmax as the output layer, '
+                            'the objective of modle must be categorical_crossentropy!')
+
+        if self.layers[-1].layer_type != 'softmax' and self.objective == 'categorical_crossentropy':
+            raise Exception('Error objective function: when using categorical_crossentropy as '
+                            'the objective, the output layer of model must be softmax!')
+
     def train(self, training_data, nb_epochs, mini_batch_size=1, verbose=1, log_epoch=1,
               validation_data=None, shuffle=True, evaluate_batch_size=100, **kwargs):
         # TODO
@@ -314,10 +325,9 @@ class Sequential(object):
                 trainer.train(model, ...)
 
             ```
-
-
         """
-
+        # check the model before training
+        self._check_()
         self.trainer.train(self,
                            training_data,
                            nb_epochs,
