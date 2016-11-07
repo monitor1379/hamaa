@@ -151,16 +151,13 @@ def download_mnist_data():
             out_file.close()
 
 
-def load_mnist_data(nb_training, nb_test, preprocess=False, flatten=True):
+def load_mnist_data(nb_training, nb_test, preprocess=False, flatten=True, one_hot=True):
     # 自动检查数据，如果数据文件不存在则会先自动下载
     download_mnist_data()
     training_x = mnist_decoder.load_train_images(num_data=nb_training)
     training_y = mnist_decoder.load_train_labels(num_data=nb_training)
     test_x = mnist_decoder.load_test_images(num_data=nb_test)
     test_y = mnist_decoder.load_test_labels(num_data=nb_test)
-
-    training_y = np_utils.to_one_hot(training_y, 10)
-    test_y = np_utils.to_one_hot(test_y, 10)
 
     if preprocess:
         training_x /= 255.
@@ -172,6 +169,10 @@ def load_mnist_data(nb_training, nb_test, preprocess=False, flatten=True):
     else:
         training_x = training_x.reshape((training_x.shape[0], 1, training_x.shape[1], training_x.shape[2]))
         test_x = test_x.reshape((test_x.shape[0], 1, test_x.shape[1], test_x.shape[2]))
+
+    if one_hot:
+        training_y = np_utils.to_one_hot(training_y, 10)
+        test_y = np_utils.to_one_hot(test_y, 10)
 
     return (training_x, training_y), (test_x, test_y)
 

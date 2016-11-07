@@ -89,8 +89,6 @@ Pillow>=3.4
 >> pip install .
 ```
 
-
-
 --- 
 
 ### Getting started: 1 minutes to Hamaa
@@ -106,7 +104,6 @@ model = Sequential()
 ```
 
 - 添加网络层只需使用`add()`:
-
 ```python
 from hamaa.layers import Dense, Activation
 
@@ -121,7 +118,7 @@ model.add(Activation('softmax'))
 from hamaa.optimizers import SGD
 
 model.set_objective('categorical_crossentropy')
-model.set_optimizer(SGD(lr=0.03, momentum=0.5))
+model.set_optimizer(SGD(lr=0.01, momentum=0.9))
 ```
 
 - 打印模型的详细信息:
@@ -143,7 +140,7 @@ training_data, validation_data = split_training_data(data=(x, y), split_ratio=0.
 - 接下来就可以开始训练模型:
 ```python
 model.train(training_data=training_data,
-            nb_epochs=40,
+            nb_epochs=30,
             mini_batch_size=100,
             verbose=1,
             validation_data=validation_data,
@@ -233,7 +230,6 @@ def run():
 
 if __name__ == '__main__':
     run()
-
 ``` 
 
 ---
@@ -258,7 +254,7 @@ def run():
     model.add(Dense(output_dim=2))
     model.add(Activation('softmax'))
     model.set_objective('categorical_crossentropy')
-    model.set_optimizer(SGD(lr=0.03, momentum=0.5))
+    model.set_optimizer(SGD(lr=0.01, momentum=0.9))
 
     print model.summary()
 
@@ -270,7 +266,7 @@ def run():
     # "verbose" means display mode of training information
     # "log_epoch" means display training information every log_epoch times
     model.train(training_data=training_data,
-                nb_epochs=40,
+                nb_epochs=30,
                 mini_batch_size=100,
                 verbose=1,
                 validation_data=validation_data,
@@ -288,6 +284,7 @@ def run():
 
 if __name__ == '__main__':
     run()
+
 
 
 ```
@@ -324,7 +321,7 @@ def run():
     model.add(Dense(output_dim=10, init='glorot_normal'))
     model.add(Activation('softmax'))
     model.set_objective('categorical_crossentropy')
-    model.set_optimizer(SGD(lr=0.01, momentum=0.1))
+    model.set_optimizer(SGD(lr=0.01, momentum=0.9))
 
     print model.summary()
 
@@ -354,6 +351,7 @@ if __name__ == '__main__':
 
 ```python
 
+
 from hamaa.datasets.datasets import load_mnist_data
 from hamaa.layers import Dense, Activation, Convolution2D, Flatten, MeanPooling2D
 from hamaa.models import Sequential
@@ -363,7 +361,7 @@ from hamaa.utils.np_utils import split_training_data
 
 
 print 'loading MNIST dataset...'
-training_data, test_data = load_mnist_data(nb_training=3000, nb_test=10000, preprocess=True, flatten=False)
+training_data, test_data = load_mnist_data(nb_training=6000, nb_test=10000, preprocess=True, flatten=False)
 training_data, validation_data = split_training_data(training_data, nb_validation=1000)
 
 print 'training_data:', training_data[0].shape
@@ -371,24 +369,24 @@ print 'validation_data:', validation_data[0].shape
 print 'test_data:', test_data[0].shape
 
 model = Sequential()
-model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='tanh', input_shape=(1, 28, 28)))
+model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='relu', input_shape=(1, 28, 28)))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
-model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='tanh'))
+model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='relu'))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
 model.add(Flatten())
-model.add(Dense(output_dim=30, init='glorot_normal'))
+model.add(Dense(output_dim=100, init='glorot_normal'))
 model.add(Activation('sigmoid'))
 model.add(Dense(output_dim=10, init='glorot_normal'))
 model.add(Activation('softmax'))
 
 model.set_objective('categorical_crossentropy')
-model.set_optimizer(SGD(lr=0.03, momentum=0.1))
+model.set_optimizer(SGD(lr=0.002, momentum=0.9))
 
 print model.summary()
 
 model.train(training_data=training_data,
-            nb_epochs=30,
-            mini_batch_size=50,
+            nb_epochs=20,
+            mini_batch_size=64,
             verbose=2,
             validation_data=validation_data,
             log_epoch=1)
@@ -400,8 +398,6 @@ vis_utils.visualize_convolution_kernel(model.layers[0], title='layer 0')
 vis_utils.visualize_convolution_kernel(model.layers[2], title='layer 2')
 
 model.plot_training_iteration()
-
-
 
 ```
 
@@ -418,13 +414,3 @@ model.plot_training_iteration()
 [![Documentation Status](https://readthedocs.org/projects/hamaa/badge/?version=latest)](http://hamaa.readthedocs.io/zh_CN/latest/?badge=latest) 
 [![Build Status](https://travis-ci.org/monitor1379/hamaa.svg?branch=dev)](https://travis-ci.org/monitor1379/hamaa)
 [![codecov](https://codecov.io/gh/monitor1379/hamaa/branch/dev/graph/badge.svg)](https://codecov.io/gh/monitor1379/hamaa)
-
-<script>
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?2b568b07f96780d51b81cba1f832e8aa";
-  var s = document.getElementsByTagName("script")[0]; 
-  s.parentNode.insertBefore(hm, s);
-})();
-</script>

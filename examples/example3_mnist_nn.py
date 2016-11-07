@@ -36,7 +36,7 @@ def run():
     model.add(Dense(output_dim=10, init='glorot_normal'))
     model.add(Activation('softmax'))
     model.set_objective('categorical_crossentropy')
-    model.set_optimizer(SGD(lr=0.01, momentum=0.1))
+    model.set_optimizer(SGD(lr=0.01, momentum=0.9))
 
     print model.summary()
 

@@ -21,7 +21,7 @@ from hamaa.utils.np_utils import split_training_data
 
 
 print 'loading MNIST dataset...'
-training_data, test_data = load_mnist_data(nb_training=3000, nb_test=10000, preprocess=True, flatten=False)
+training_data, test_data = load_mnist_data(nb_training=6000, nb_test=10000, preprocess=True, flatten=False)
 training_data, validation_data = split_training_data(training_data, nb_validation=1000)
 
 print 'training_data:', training_data[0].shape
@@ -29,24 +29,24 @@ print 'validation_data:', validation_data[0].shape
 print 'test_data:', test_data[0].shape
 
 model = Sequential()
-model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='tanh', input_shape=(1, 28, 28)))
+model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='relu', input_shape=(1, 28, 28)))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
-model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='tanh'))
+model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='relu'))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
 model.add(Flatten())
-model.add(Dense(output_dim=30, init='glorot_normal'))
+model.add(Dense(output_dim=100, init='glorot_normal'))
 model.add(Activation('sigmoid'))
 model.add(Dense(output_dim=10, init='glorot_normal'))
 model.add(Activation('softmax'))
 
 model.set_objective('categorical_crossentropy')
-model.set_optimizer(SGD(lr=0.03, momentum=0.1))
+model.set_optimizer(SGD(lr=0.002, momentum=0.9))
 
 print model.summary()
 
 model.train(training_data=training_data,
-            nb_epochs=30,
-            mini_batch_size=50,
+            nb_epochs=20,
+            mini_batch_size=64,
             verbose=2,
             validation_data=validation_data,
             log_epoch=1)

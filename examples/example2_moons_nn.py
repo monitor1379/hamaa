@@ -27,7 +27,7 @@ def run():
     model.add(Dense(output_dim=2))
     model.add(Activation('softmax'))
     model.set_objective('categorical_crossentropy')
-    model.set_optimizer(SGD(lr=0.03, momentum=0.5))
+    model.set_optimizer(SGD(lr=0.01, momentum=0.9))
 
     print model.summary()
 
@@ -39,7 +39,7 @@ def run():
     # "verbose" means display mode of training information
     # "log_epoch" means display training information every log_epoch times
     model.train(training_data=training_data,
-                nb_epochs=40,
+                nb_epochs=30,
                 mini_batch_size=100,
                 verbose=1,
                 validation_data=validation_data,

@@ -196,8 +196,10 @@ class SequentialTrainer(object):
         plt.xlabel('epoch')
         plt.ylabel('accuracy')
         plt.plot(epoch, training_acc, label='train')
+        plt.scatter(epoch, training_acc, marker='*')
         if validation_acc:
             plt.plot(epoch, validation_acc, label='validation')
+            plt.scatter(epoch, validation_acc, marker='*')
         plt.legend(loc=0)
 
         # 绘画准确率随着训练周期的折线图的放大版本
@@ -214,8 +216,10 @@ class SequentialTrainer(object):
         plt.ylabel('accuracy')
         plt.plot(epoch, np.ones_like(epoch), 'k--')
         plt.plot(epoch, training_acc, label='train')
+        plt.scatter(epoch, training_acc, marker='*')
         if validation_acc:
             plt.plot(epoch, validation_acc, label='validation')
+            plt.scatter(epoch, validation_acc, marker='*')
         plt.legend(loc=0)
 
         # 绘画损失函数值随着训练周期的折线图
@@ -229,8 +233,10 @@ class SequentialTrainer(object):
         plt.xlabel('epoch')
         plt.ylabel('loss')
         plt.plot(epoch, training_loss, label='training')
+        plt.scatter(epoch, training_loss, marker='*')
         if validation_loss:
             plt.plot(epoch, validation_loss, label='validation')
+            plt.scatter(epoch, validation_loss, marker='*')
         plt.legend(loc=0)
 
         plt.show()
