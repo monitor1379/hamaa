@@ -21,17 +21,17 @@ from hamaa.utils.np_utils import split_training_data
 
 
 print 'loading MNIST dataset...'
-training_data, test_data = load_mnist_data(nb_training=6000, nb_test=10000, preprocess=True, flatten=False)
-training_data, validation_data = split_training_data(training_data, nb_validation=1000)
+training_data, test_data = load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=False)
+training_data, validation_data = split_training_data(training_data, nb_validation=2000)
 
 print 'training_data:', training_data[0].shape
 print 'validation_data:', validation_data[0].shape
 print 'test_data:', test_data[0].shape
 
 model = Sequential()
-model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='relu', input_shape=(1, 28, 28)))
+model.add(Convolution2D(nb_kernel=32, kernel_height=5, kernel_width=5, activation='relu', input_shape=(1, 28, 28)))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
-model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='relu'))
+model.add(Convolution2D(nb_kernel=64, kernel_height=5, kernel_width=5, activation='relu'))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(output_dim=100, init='glorot_normal'))

@@ -405,9 +405,12 @@ model.plot_training_iteration()
 (**注**: 非来自上述程序)
 
 <p align="center">
-      <img width=200 src="docs/images/README/cnn_first_layer_weight.png" alt="kernel" />
+      <img width=300 src="docs/images/README/cnn_first_layer_kernels.png" alt="cnn_first_layer_kernels" />
 </p>
 
+<p align="center">
+      <img width=300 src="docs/images/README/cnn_second_layer_kernels.png" alt="cnn_second_layer_kernels" />
+</p>
 
 ### dev branch
 

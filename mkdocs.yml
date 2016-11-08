@@ -1,11 +1,16 @@
 site_name: Hamaa中文文档
 theme: readthedocs
 repo_url: http://github.com/monitor1379/hamaa
+site_url: http://hamaa.readthedocs.io/
+site_description: 'Documentation for Hamaa, the Simple and Naive Python Deep Learning library.'
 
 pages:
-- 主页: index.md
-- 快速开始: getting_started.md
-- 模型: models.md
-- 网络层: layers.md
-- 优化器: optimizers.md
+- 主页 Home: index.md
+- 安装 Installation: user-guide/installatino.md
+- 教程 Tutorials: user-guide/tutorials.md
+- 例子 Examples: user-guide/examples.md
 - 关于: about.md
+
+
+markdown_extensions:
+    - admonition:
