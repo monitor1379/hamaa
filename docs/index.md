@@ -1,4 +1,3 @@
-
 # Hamaa 中文文档
 
 <p align="center">
@@ -6,6 +5,7 @@
 </p>
 
 ## 没错，你刚发现了Hamaa！
+
 
 Hamaa是专为深度学习初学者与研究人员设计的一款深度学习库。
 它构建于Python/NumPy之上，
