@@ -1,16 +1,32 @@
 site_name: Hamaa中文文档
+# theme: mkdocs
 theme: readthedocs
+# theme: material
+# theme: flatly
+# theme: cosmo
+# theme: yeti
+# theme: slate
+
 repo_url: http://github.com/monitor1379/hamaa
 site_url: http://hamaa.readthedocs.io/
 site_description: 'Documentation for Hamaa, the Simple and Naive Python Deep Learning library.'
 
+# Copyright
+copyright: 'Copyright (c) 2016 Zhenpeng Deng'
+
+
+# Extensions
+markdown_extensions:
+  - admonition:
+
+
 pages:
 - 主页 Home: index.md
-- 安装 Installation: user-guide/installatino.md
-- 教程 Tutorials: user-guide/tutorials.md
-- 例子 Examples: user-guide/examples.md
-- 关于: about.md
+- 安装 Installation: user/installation.md
+- 教程 Tutorials: user/tutorials.md
+- 例子 Examples: user/examples.md
+- 开发 Development: developer/development.md
+- 更多 More: developer/more.md
+- 关于 About: about.md
 
 
-markdown_extensions:
-    - admonition:

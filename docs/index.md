@@ -1,8 +1,7 @@
 # Hamaa 中文文档
 
- 
 <p align="center">
-	<img width=500 src="https://rawgit.com/monitor1379/hamaa/dev/docs/images/hamaa-logo.svg" />
+	<img width=500 src="images/hamaa-logo.svg" />
 </p>
 
 ## 没错，你刚发现了Hamaa！
