@@ -14,6 +14,9 @@ theme: readthedocs
 # theme: yeti
 # theme: slate
 
+extra_css:
+    - css/extra.css
+
 # Copyright
 copyright: 'Copyright (c) 2016 Zhenpeng Deng'
 
