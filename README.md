@@ -24,7 +24,7 @@
 [Caffe](http://caffe.berkeleyvision.org/)、
 [MXNet](http://mxnet.readthedocs.io/en/latest/)
 等等)；
-- 相反，Hamaa被创造的目的是**希望让深度学习的初学者能够通过使用、
+- 相反，Hamaa被创造的目的是**希望有一定深度学习基础的初学者能够通过使用、
 阅读Hamaa的源代码甚至去重现Hamaa来加深对神经网络/深度学习的理解**，
 以便更好地去使用上述几个工业级别的深度学习框架去解决实际问题（而不是成为一个调包/调参侠 :D）。
 
