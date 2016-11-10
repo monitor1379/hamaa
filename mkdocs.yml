@@ -20,7 +20,8 @@ copyright: 'Copyright (c) 2016 Zhenpeng Deng'
 # Extensions
 markdown_extensions:
   - admonition
-
+  - smarty
+  - headerid
 
 pages:
 - 主页 Home: index.md
@@ -30,5 +31,4 @@ pages:
 - 开发 Development: developer/development.md
 - 更多 More: developer/more.md
 - 关于 About: about.md
-
 
