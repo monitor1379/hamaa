@@ -1,6 +1,7 @@
 # 教程 Tutorials
 
-本教程主要介绍Hamaa中的一些常见概念以及如何使用Hamaa搭建神经网络。
+本教程主要介绍Hamaa中的一些常见概念，
+以及如何在1分钟内学会使用Hamaa搭建神经网络进行分类。
 
 ## Getting started: 1 minutes to Hamaa
 
@@ -81,9 +82,7 @@ print model.evaluate_accuracy(x, y)
 model.plot_training_iteration()
 ```
 
-<p align="center">
-	<img width=600 src="../images/README/epochs.png" alt="epochs" />
-</p>
+![epochs](../images/README/epochs.png)
 
 
 最后，如果数据集是二维数据，那么还可以画出决策边界:
@@ -92,6 +91,4 @@ model.plot_training_iteration()
 model.plot_prediction(data=training_data)
 ```
 
-<p align="center">
-	<img width=600 src="../images/README/prediction.png" alt="prediction" />
-</p>
+![prediction](../images/README/prediction.png)

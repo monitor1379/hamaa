@@ -197,46 +197,43 @@ from hamaa.models import Sequential
 from hamaa.optimizers import SGD
 
 
-def run():
-    # 1. create a model
-    model = Sequential()
+# 1. create a model
+model = Sequential()
 
-    # 2. add a full connected layer to model
-    model.add(Dense(input_dim=2, output_dim=2, init='uniform'))
+# 2. add a full connected layer to model
+model.add(Dense(input_dim=2, output_dim=2, init='uniform'))
 
-    # 3. add a activation layer to model
-    model.add(Activation('sigmoid'))
+# 3. add a activation layer to model
+model.add(Activation('sigmoid'))
 
-    # 4. use "mean square error" as the objective of model
-    model.set_objective('mse')
+# 4. use "mean square error" as the objective of model
+model.set_objective('mse')
 
-    # 5. use "stochastic gradient descent" as the optimizerof model
-    model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))
+# 5. use "stochastic gradient descent" as the optimizerof model
+model.set_optimizer(SGD(lr=0.9, momentum=0.9, decay=1e-6))
 
-    # 6. print the summary of model
-    print model.summary()
+# 6. print the summary of model
+print model.summary()
 
-    # 7. load "or" data, note that the label "y" is one hot
-    #    x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-    #    y = np.array([[1, 0], [0, 1], [0, 1], [0, 1]])
-    x, y = datasets.load_or_data()
+# 7. load "or" data, note that the label "y" is one hot
+#    x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+#    y = np.array([[1, 0], [0, 1], [0, 1], [0, 1]])
+x, y = datasets.load_or_data()
 
-    # 8. train the neural network
-    model.train(training_data=(x, y), nb_epochs=10)
+# 8. train the neural network
+model.train(training_data=(x, y), nb_epochs=10)
 
-    # 9. evaluate the accuracy on data
-    print 'test accuracy: ', model.evaluate_accuracy(x, y)
+# 9. evaluate the accuracy on data
+print 'test accuracy: ', model.evaluate_accuracy(x, y)
 
 
-if __name__ == '__main__':
-    run()
 ``` 
 
 ---
 
 #### examples/example2_moons_nn.py
 
-构建一个神经元数目为 [2->3->2] 的多层神经网络来对线性不可分数据集进行分类。
+构建一个神经元数目为 [2->4->2] 的多层神经网络来对线性不可分数据集进行分类。
 
 ```python
 
@@ -247,45 +244,38 @@ from hamaa.optimizers import SGD
 from hamaa.utils.np_utils import split_training_data
 
 
-def run():
-    model = Sequential()
-    model.add(Dense(input_dim=2, output_dim=4, init='normal'))
-    model.add(Activation('sigmoid'))
-    model.add(Dense(output_dim=2))
-    model.add(Activation('softmax'))
-    model.set_objective('categorical_crossentropy')
-    model.set_optimizer(SGD(lr=0.01, momentum=0.9))
+model = Sequential()
+model.add(Dense(input_dim=2, output_dim=4, init='normal'))
+model.add(Activation('sigmoid'))
+model.add(Dense(output_dim=2))
+model.add(Activation('softmax'))
+model.set_objective('categorical_crossentropy')
+model.set_optimizer(SGD(lr=0.01, momentum=0.9))
 
-    print model.summary()
+print model.summary()
 
-    x, y = datasets.load_moons_data(nb_data=2000, noise=0.1)
+x, y = datasets.load_moons_data(nb_data=2000, noise=0.1)
 
-    # split nine in tenth of original data as training data, and the rest as validation data
-    training_data, validation_data = split_training_data(data=(x, y), split_ratio=0.9)
+# split nine in tenth of original data as training data, and the rest as validation data
+training_data, validation_data = split_training_data(data=(x, y), split_ratio=0.9)
 
-    # "verbose" means display mode of training information
-    # "log_epoch" means display training information every log_epoch times
-    model.train(training_data=training_data,
-                nb_epochs=30,
-                mini_batch_size=100,
-                verbose=1,
-                validation_data=validation_data,
-                log_epoch=1)
+# "verbose" means display mode of training information
+# "log_epoch" means display training information every log_epoch times
+model.train(training_data=training_data,
+            nb_epochs=30,
+            mini_batch_size=100,
+            verbose=1,
+            validation_data=validation_data,
+            log_epoch=1)
 
-    print 'test accuracy: ', model.evaluate_accuracy(x, y)
+print 'test accuracy: ', model.evaluate_accuracy(x, y)
 
-    # plot the prediction on training_data and validation_data
-    model.plot_prediction(data=training_data)
-    model.plot_prediction(data=validation_data)
+# plot the prediction on training_data and validation_data
+model.plot_prediction(data=training_data)
+model.plot_prediction(data=validation_data)
 
-    # plot a line chart about accuracy and loss with epoch.
-    model.plot_training_iteration()
-
-
-if __name__ == '__main__':
-    run()
-
-
+# plot a line chart about accuracy and loss with epoch.
+model.plot_training_iteration()
 
 ```
 
@@ -294,7 +284,7 @@ if __name__ == '__main__':
 #### examples/example3_mnist_nn.py
 
 构建一个多层神经网络来对MNIST数据集进行分类。
-使用进度条功能来显示过程。
+使用进度条功能来显示训练过程。
 
 ```python
 
@@ -305,39 +295,35 @@ from hamaa.optimizers import SGD
 from hamaa.utils.np_utils import split_training_data
 
 
-def run():
-    print 'loading MNIST dataset...'
-    # "preprocess" means normalization
-    training_data, test_data = load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=True)
-    training_data, validation_data = split_training_data(training_data, split_ratio=0.95)
+print 'loading MNIST dataset...'
+# "preprocess" means normalization
+training_data, test_data = load_mnist_data(nb_training=60000, nb_test=10000, preprocess=True, flatten=True)
+training_data, validation_data = split_training_data(training_data, split_ratio=0.95)
 
-    print 'training_data:', training_data[0].shape
-    print 'validation_data:', validation_data[0].shape
-    print 'test_data:', test_data[0].shape
+print 'training_data:', training_data[0].shape
+print 'validation_data:', validation_data[0].shape
+print 'test_data:', test_data[0].shape
 
-    model = Sequential()
-    model.add(Dense(input_dim=784, output_dim=100, init='glorot_normal'))
-    model.add(Activation('sigmoid'))
-    model.add(Dense(output_dim=10, init='glorot_normal'))
-    model.add(Activation('softmax'))
-    model.set_objective('categorical_crossentropy')
-    model.set_optimizer(SGD(lr=0.01, momentum=0.9))
+model = Sequential()
+model.add(Dense(input_dim=784, output_dim=100, init='glorot_normal'))
+model.add(Activation('sigmoid'))
+model.add(Dense(output_dim=10, init='glorot_normal'))
+model.add(Activation('softmax'))
+model.set_objective('categorical_crossentropy')
+model.set_optimizer(SGD(lr=0.01, momentum=0.9))
 
-    print model.summary()
+print model.summary()
 
-    model.train(training_data=training_data,
-                nb_epochs=10,
-                mini_batch_size=100,
-                verbose=2,
-                validation_data=validation_data,
-                log_epoch=1)
+model.train(training_data=training_data,
+            nb_epochs=10,
+            mini_batch_size=100,
+            verbose=2,
+            validation_data=validation_data,
+            log_epoch=1)
 
-    print 'test accuracy:', model.evaluate_accuracy(test_data[0], test_data[1])
-    model.plot_training_iteration()
+print 'test accuracy:', model.evaluate_accuracy(test_data[0], test_data[1])
+model.plot_training_iteration()
 
-
-if __name__ == '__main__':
-    run()
 
 ```
 
@@ -346,8 +332,8 @@ if __name__ == '__main__':
 #### examples/example4_mnist_cnn.py
 
 构建一个卷积神经网络来对MNIST数据集进行分类。
-使用进度条功能来显示过程，并使用可视化工具对卷积层
-权重进行可视化。
+使用进度条功能来显示训练过程，
+并使用可视化工具对卷积层权重进行可视化。
 
 ```python
 
