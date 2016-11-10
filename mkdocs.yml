@@ -1,4 +1,11 @@
 site_name: Hamaa中文文档
+site_author: Zhenpeng Deng
+site_url: http://hamaa.readthedocs.io/
+site_description: 'Documentation for Hamaa, the Simple and Naive Python Deep Learning library.'
+
+repo_url: http://github.com/monitor1379/hamaa
+repo_name: GitHub
+
 # theme: mkdocs
 theme: readthedocs
 # theme: material
@@ -7,18 +14,17 @@ theme: readthedocs
 # theme: yeti
 # theme: slate
 
-repo_url: http://github.com/monitor1379/hamaa
-site_url: http://hamaa.readthedocs.io/
-site_description: 'Documentation for Hamaa, the Simple and Naive Python Deep Learning library.'
+extra_css:
+    - css/extra.css
 
 # Copyright
 copyright: 'Copyright (c) 2016 Zhenpeng Deng'
 
-
 # Extensions
 markdown_extensions:
-  - admonition:
-
+  - admonition
+  - smarty
+  - headerid
 
 pages:
 - 主页 Home: index.md
@@ -28,5 +34,4 @@ pages:
 - 开发 Development: developer/development.md
 - 更多 More: developer/more.md
 - 关于 About: about.md
-
 
