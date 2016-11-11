@@ -29,9 +29,9 @@ print 'validation_data:', validation_data[0].shape
 print 'test_data:', test_data[0].shape
 
 model = Sequential()
-model.add(Convolution2D(nb_kernel=32, kernel_height=5, kernel_width=5, activation='relu', input_shape=(1, 28, 28)))
+model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='relu', input_shape=(1, 28, 28)))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
-model.add(Convolution2D(nb_kernel=64, kernel_height=5, kernel_width=5, activation='relu'))
+model.add(Convolution2D(nb_kernel=5, kernel_height=5, kernel_width=5, activation='relu'))
 model.add(MeanPooling2D(pooling_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(output_dim=200, init='glorot_normal'))

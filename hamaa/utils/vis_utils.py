@@ -24,5 +24,5 @@ def visualize_convolution_kernel(conv_layer, title='convolution layer visualizin
     for i in range(N):
         plt.subplot(row, col, i + 1)
         plt.axis('off')
-        plt.imshow(conv_layer.w[i][0], cmap='gray', interpolation='None')
+        plt.imshow(conv_layer.w[i][0], cmap='gray', interpolation='nearest')
     plt.show()
