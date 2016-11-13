@@ -12,6 +12,7 @@ Hamaa始终遵循着`too SIMPLE and sometimes NAIVE`的原则来设计：
 - **朴素**: 所有模块都使用朴素的代码实现。每一段源代码都希望能在第一次阅读时显得直观易懂，具有良好的可读性，
 并且不过分使用trick。
 
+---
 
 ## 报告 Bug
 
@@ -27,6 +28,7 @@ Hamaa始终遵循着`too SIMPLE and sometimes NAIVE`的原则来设计：
 
 如果您不确定这是否是Bug，或者不确定是否与Hamaa相关，您可以[发邮件](mailto:yy4f5da2@hotmail.com)给作者说明情况。
 
+---
 
 ## 修复 Bug
 
@@ -37,6 +39,7 @@ Hamaa始终遵循着`too SIMPLE and sometimes NAIVE`的原则来设计：
 - 如果您发现了可以自己修复的amaa的一个Bug，
 您可以用任何方法来实现修复并且无需立即报告这个Bug。
 
+---
 
 ## 加入我们 Join us
 
@@ -47,6 +50,8 @@ Hamaa始终遵循着`too SIMPLE and sometimes NAIVE`的原则来设计：
 - 尽可能的给出完善的说明文档。
 
 - 在GitHub通过pull request提交您的申请。
+
+---
 
 ## 如何加入 How to join us
 
@@ -74,6 +79,7 @@ $ mkdocs serve
 - TODO
 - [A Guide to NumPy/SciPy Documentation](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt)
 
+---
 
 ### 测试
 
@@ -93,6 +99,8 @@ $ mkdocs serve
 
 - TODO
 
+---
+
 ## 发送拉请求 Pull request
 
 当您对您添加的内容感到满意并且测试通过，文档规范，简明，不存在任何注释错误时，
@@ -104,5 +112,5 @@ $ mkdocs serve
 当您提交拉请求时，请附带一个更改内容的说明，以帮助我们能更好的检阅它。
 
 如果它是一个正在开放的问题(issue)，比如：issue#123，
-请在您的描述中添加 Fixes#123,*Resolves#123*或者*Closes#123*，
+请在您的描述中添加 Fixes#123，*Resolves#123*或者*Closes#123*，
 这样当您的拉请求被接纳之后GitHub会关闭那个问题。
