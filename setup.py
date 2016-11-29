@@ -37,7 +37,7 @@ mod_im2rowutils = Extension(name="im2rowutils",
 # setup metadata
 metadata = dict(
     name='hamaa',
-    version='0.6.0',
+    version='0.7.0',
     author='Zhenpeng Deng',
     author_email='yy4f5da2@hotmail.com',
     description=DOCLINES[0],

@@ -51,7 +51,7 @@ model.train(training_data=training_data,
             validation_data=validation_data,
             log_epoch=1)
 
-print model.evaluate_accuracy(test_data[0], test_data[1])
+print model.evaluate_accuracy(test_data[0], test_data[1], evaluate_batch_size=64)
 
 # visualize the kernels of convolution layer
 vis_utils.visualize_convolution_kernel(model.layers[0], title='layer 0')

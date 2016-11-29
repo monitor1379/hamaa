@@ -17,7 +17,7 @@ TensorFlow/Theano的Operator求导机制（Hamaa中为手动实现Operator的for
 
 1. 彻底弄懂了神经网络中全连接层、激活层、卷积层、池化层的backpropagation过程及其向量化（vectorization）实现。
 
-2. 了解到了softmax输出层为什么通常配合cross entropy损失函数以及negative log likelihood一起使用。
+2. 了解到了softmax输出层为什么通常配合cross entropy损失函数以及negative log likelihood优化方法一起使用。
 
 - 了解到了神经网络权重初始化的原因与各种方法。
 
