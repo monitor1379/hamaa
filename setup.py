@@ -46,6 +46,7 @@ metadata = dict(
     download_url='https://github.com/monitor1379/hamaa',
     license='GPLv3',
     platforms=['Windows'],
+    install_requires=['numpy', 'matplotlib', 'nose', 'Pillow'],
     packages=find_packages(),
     include_package_data=True,  # 使用MANIFEST.in文件自动导入非Py模块的文件/文件夹
 )
